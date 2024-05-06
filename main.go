@@ -11,6 +11,7 @@ import (
 var CurVM string
 
 // path: C:\Users\zbrow\OneDrive\Documents\Machon_Tal\Fundementals\Lab0-Eng\
+// path: C:\Users\Merekat\Documents\School\23-24\Fundamentals\Lab0-Eng\
 
 func main() {
 	// get path from user
@@ -33,7 +34,7 @@ func main() {
 		return
 	}
 
-	// traverse files in dir with extention .vm
+	// traverse files in dir with extension .vm
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".vm" {
 			fmt.Println(file.Name())
@@ -52,7 +53,7 @@ func main() {
 				if err != nil {
 					break
 				}
-				// take out 1st word, swicth it, if add send it, if logical inc ctr and then send with ctr, if mem get rest of words and send
+				// take out 1st word, switch it, if add send it, if logical inc ctr and then send with ctr, if mem get rest of words and send
 				// or have helper fn inc ctr and have global ctr and then reset it for each file
 				//fmt.Println(line)
 				str := strconv.Itoa(counter)
@@ -67,7 +68,7 @@ func main() {
 	// each file hs own loop
 	// in loop have ctr for num of logical commands
 	// have global var for name of file without .vm
-	// read each line to decide helper funciton - switch
+	// read each line to decide helper function - switch
 	// at end of ech file close file and print to screen
 	// after outer loop make print
 	// write the helper functions
