@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 )
 
 var CurVM string
@@ -58,9 +59,41 @@ func main() {
 				//fmt.Println(line)
 				str := strconv.Itoa(counter)
 				str = str + ":"
-				writer.Write([]byte(str + line))
-				writer.Flush()
+				//writer.Write([]byte(str + line))
+				//writer.Flush()
 				counter++
+				words := strings.Fields(line)
+				if len(words) != 0 {
+					switch words[0] {
+					case "add":
+						writer.Write([]byte(str + "add\n"))
+						writer.Flush()
+					case "sub":
+						writer.Write([]byte(str + "sub\n"))
+						writer.Flush()
+					case "neg":
+						writer.Write([]byte(str + "neg\n"))
+						writer.Flush()
+					case "eq":
+						writer.Write([]byte(str + "eq\n"))
+						writer.Flush()
+					case "gt":
+						writer.Write([]byte(str + "gt\n"))
+						writer.Flush()
+					case "lt":
+						writer.Write([]byte(str + "lt\n"))
+						writer.Flush()
+					case "push":
+						writer.Write([]byte(str + "push\n"))
+						writer.Flush()
+					case "pop":
+						writer.Write([]byte(str + "pop\n"))
+						writer.Flush()
+					default:
+						writer.Write([]byte(str + "unknown\n"))
+						writer.Flush()
+					}
+				}
 			}
 		}
 	}
