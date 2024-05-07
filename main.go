@@ -1,3 +1,5 @@
+// Zahava Brown - 557029367
+// Tali Cohen - 329651871
 package main
 
 import (
@@ -9,52 +11,60 @@ import (
 	"strings"
 )
 
+// path: C:\Users\zbrow\OneDrive\Documents\Machon_Tal\Fundementals\Lab0-Eng\
+// path: C:\Users\Merekat\Documents\School\23-24\Fundamentals\Lab0-Eng\
+
 var CurVM string
 
-// var writer *bufio.Writer
 var counter int
 var asm_path string
 
-func handleAdd() {
+func createWriter() (*bufio.Writer, error) {
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
 		fmt.Println("File opening error", err)
-		return
+		return nil, err
 	}
 	writer := bufio.NewWriter(write_file)
+	return writer, nil
+}
+
+func handleAdd() {
+	writer, err := createWriter()
+	if err != nil {
+		fmt.Println("Error creating writer:", err)
+		return
+	}
 	writer.Write([]byte("command: add\n"))
 	writer.Flush()
 }
 
 func handleSub() {
-	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	writer, err := createWriter()
 	if err != nil {
-		fmt.Println("File opening error", err)
+		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer := bufio.NewWriter(write_file)
 	writer.Write([]byte("command: sub\n"))
 	writer.Flush()
 }
 
 func handleNeg() {
-	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	writer, err := createWriter()
 	if err != nil {
-		fmt.Println("File opening error", err)
+		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer := bufio.NewWriter(write_file)
 	writer.Write([]byte("command: neg\n"))
 	writer.Flush()
 }
 
 func handleEq() {
-	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	writer, err := createWriter()
 	if err != nil {
-		fmt.Println("File opening error", err)
+		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer := bufio.NewWriter(write_file)
 	writer.Write([]byte("command: eq\n"))
 	writer.Flush()
 	str := strconv.Itoa(counter)
@@ -65,12 +75,11 @@ func handleEq() {
 }
 
 func handleGt() {
-	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	writer, err := createWriter()
 	if err != nil {
-		fmt.Println("File opening error", err)
+		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer := bufio.NewWriter(write_file)
 	writer.Write([]byte("command: gt\n"))
 	writer.Flush()
 	str := strconv.Itoa(counter)
@@ -81,12 +90,11 @@ func handleGt() {
 }
 
 func handleLt() {
-	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	writer, err := createWriter()
 	if err != nil {
-		fmt.Println("File opening error", err)
+		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer := bufio.NewWriter(write_file)
 	writer.Write([]byte("command: lt\n"))
 	writer.Flush()
 	str := strconv.Itoa(counter)
@@ -97,38 +105,33 @@ func handleLt() {
 }
 
 func handlePush(str string, num int) {
-	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	writer, err := createWriter()
 	if err != nil {
-		fmt.Println("File opening error", err)
+		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer := bufio.NewWriter(write_file)
 	writer.Write([]byte("command: push segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
 	writer.Flush()
 }
 
 func handlePop(str string, num int) {
-	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	writer, err := createWriter()
 	if err != nil {
-		fmt.Println("File opening error", err)
+		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer := bufio.NewWriter(write_file)
 	writer.Write([]byte("command: pop segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
 	writer.Flush()
 }
-
-// path: C:\Users\zbrow\OneDrive\Documents\Machon_Tal\Fundementals\Lab0-Eng\
-// path: C:\Users\Merekat\Documents\School\23-24\Fundamentals\Lab0-Eng\
 
 func main() {
 	// get path from user
 	fmt.Println("Enter path to folder")
 	var dir_path string
 	fmt.Scanln(&dir_path)
-	asm_path = dir_path + "Lab0-Eng.asm"
+	var asm_file_name = "Lab0-Eng.asm"
+	asm_path = dir_path + asm_file_name
 
-	// create output file Tar0.asm in that directory and open from writing text
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
 		fmt.Println("File opening error", err)
@@ -143,7 +146,6 @@ func main() {
 		return
 	}
 
-	// traverse files in dir with extension .vm
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".vm" {
 			CurVM = file.Name()
@@ -161,14 +163,6 @@ func main() {
 				if err != nil {
 					break
 				}
-				// take out 1st word, switch it, if add send it, if logical inc ctr and then send with ctr, if mem get rest of words and send
-				// or have helper fn inc ctr and have global ctr and then reset it for each file
-				//fmt.Println(line)
-				//str := strconv.Itoa(counter)
-				//str = str + ":"
-				//writer.Write([]byte(str + line))
-				//writer.Flush()
-				//counter++
 				words := strings.Fields(line)
 				if len(words) != 0 {
 					switch words[0] {
@@ -204,18 +198,8 @@ func main() {
 					}
 				}
 			}
-			fmt.Println("End of input file: " + file.Name() + "\n")
+			fmt.Println("End of input file: " + file.Name())
 		}
 	}
-	fmt.Println("Output file is ready: " + write_file.Name() + "\n")
-	// each file hs own loop
-	// in loop have ctr for num of logical commands
-	// have global var for name of file without .vm
-	// read each line to decide helper function - switch - done
-	// at end of ech file close file and print to screen
-	// after outer loop make print
-	// write the helper functions - all done
-	// handleAdd, handleSub, handleNeg
-	// handleEq, HandleGt, handleLt
-	// handlePush, handlePop
+	fmt.Println("Output file is ready: " + asm_file_name)
 }
