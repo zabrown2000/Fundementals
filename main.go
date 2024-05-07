@@ -15,7 +15,6 @@ import (
 // path: C:\Users\Merekat\Documents\School\23-24\Fundamentals\Lab0-Eng\
 
 var CurVM string
-
 var counter int
 var asm_path string
 
@@ -65,13 +64,11 @@ func handleEq() {
 		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer.Write([]byte("command: eq\n"))
-	writer.Flush()
 	str := strconv.Itoa(counter)
 	str = str + "\n"
-	counter++
-	writer.Write([]byte("counter: " + str))
+	writer.Write([]byte("command: eq\ncounter: " + str))
 	writer.Flush()
+	counter++
 }
 
 func handleGt() {
@@ -80,13 +77,11 @@ func handleGt() {
 		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer.Write([]byte("command: gt\n"))
-	writer.Flush()
 	str := strconv.Itoa(counter)
 	str = str + "\n"
-	counter++
-	writer.Write([]byte("counter: " + str))
+	writer.Write([]byte("command: gt\ncounter: " + str))
 	writer.Flush()
+	counter++
 }
 
 func handleLt() {
@@ -95,13 +90,11 @@ func handleLt() {
 		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer.Write([]byte("command: lt\n"))
-	writer.Flush()
 	str := strconv.Itoa(counter)
 	str = str + "\n"
-	counter++
-	writer.Write([]byte("counter: " + str))
+	writer.Write([]byte("command: lt\ncounter: " + str))
 	writer.Flush()
+	counter++
 }
 
 func handlePush(str string, num int) {
