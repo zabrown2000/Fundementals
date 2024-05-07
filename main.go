@@ -11,6 +11,113 @@ import (
 
 var CurVM string
 
+// var writer *bufio.Writer
+var counter int
+var asm_path string
+
+func handleAdd() {
+	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("File opening error", err)
+		return
+	}
+	writer := bufio.NewWriter(write_file)
+	writer.Write([]byte("command: add\n"))
+	writer.Flush()
+}
+
+func handleSub() {
+	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("File opening error", err)
+		return
+	}
+	writer := bufio.NewWriter(write_file)
+	writer.Write([]byte("command: sub\n"))
+	writer.Flush()
+}
+
+func handleNeg() {
+	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("File opening error", err)
+		return
+	}
+	writer := bufio.NewWriter(write_file)
+	writer.Write([]byte("command: neg\n"))
+	writer.Flush()
+}
+
+func handleEq() {
+	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("File opening error", err)
+		return
+	}
+	writer := bufio.NewWriter(write_file)
+	writer.Write([]byte("command: eq\n"))
+	writer.Flush()
+	str := strconv.Itoa(counter)
+	str = str + "\n"
+	counter++
+	writer.Write([]byte("counter: " + str))
+	writer.Flush()
+}
+
+func handleGt() {
+	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("File opening error", err)
+		return
+	}
+	writer := bufio.NewWriter(write_file)
+	writer.Write([]byte("command: gt\n"))
+	writer.Flush()
+	str := strconv.Itoa(counter)
+	str = str + "\n"
+	counter++
+	writer.Write([]byte("counter: " + str))
+	writer.Flush()
+}
+
+func handleLt() {
+	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("File opening error", err)
+		return
+	}
+	writer := bufio.NewWriter(write_file)
+	writer.Write([]byte("command: lt\n"))
+	writer.Flush()
+	str := strconv.Itoa(counter)
+	str = str + "\n"
+	counter++
+	writer.Write([]byte("counter: " + str))
+	writer.Flush()
+}
+
+func handlePush(str string, num int) {
+	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("File opening error", err)
+		return
+	}
+	writer := bufio.NewWriter(write_file)
+	writer.Write([]byte("command: push segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
+	writer.Flush()
+}
+
+func handlePop(str string, num int) {
+	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("File opening error", err)
+		return
+	}
+	writer := bufio.NewWriter(write_file)
+	writer.Write([]byte("command: pop segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
+	writer.Flush()
+}
+
 // path: C:\Users\zbrow\OneDrive\Documents\Machon_Tal\Fundementals\Lab0-Eng\
 // path: C:\Users\Merekat\Documents\School\23-24\Fundamentals\Lab0-Eng\
 
@@ -19,7 +126,7 @@ func main() {
 	fmt.Println("Enter path to folder")
 	var dir_path string
 	fmt.Scanln(&dir_path)
-	var asm_path = dir_path + "Lab0-Eng.asm"
+	asm_path = dir_path + "Lab0-Eng.asm"
 
 	// create output file Tar0.asm in that directory and open from writing text
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
@@ -27,6 +134,7 @@ func main() {
 		fmt.Println("File opening error", err)
 		return
 	}
+	defer write_file.Close()
 	writer := bufio.NewWriter(write_file)
 
 	files, err := os.ReadDir(dir_path)
@@ -38,16 +146,15 @@ func main() {
 	// traverse files in dir with extension .vm
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".vm" {
-			fmt.Println(file.Name())
 			CurVM = file.Name()
 			curFile, err := os.Open(dir_path + CurVM)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-
+			defer curFile.Close()
 			reader := bufio.NewReader(curFile)
-			var counter int = 1
+			counter = 1
 
 			for {
 				line, err := reader.ReadString('\n')
@@ -57,54 +164,57 @@ func main() {
 				// take out 1st word, switch it, if add send it, if logical inc ctr and then send with ctr, if mem get rest of words and send
 				// or have helper fn inc ctr and have global ctr and then reset it for each file
 				//fmt.Println(line)
-				str := strconv.Itoa(counter)
-				str = str + ":"
+				//str := strconv.Itoa(counter)
+				//str = str + ":"
 				//writer.Write([]byte(str + line))
 				//writer.Flush()
-				counter++
+				//counter++
 				words := strings.Fields(line)
 				if len(words) != 0 {
 					switch words[0] {
 					case "add":
-						writer.Write([]byte(str + "add\n"))
-						writer.Flush()
+						handleAdd()
 					case "sub":
-						writer.Write([]byte(str + "sub\n"))
-						writer.Flush()
+						handleSub()
 					case "neg":
-						writer.Write([]byte(str + "neg\n"))
-						writer.Flush()
+						handleNeg()
 					case "eq":
-						writer.Write([]byte(str + "eq\n"))
-						writer.Flush()
+						handleEq()
 					case "gt":
-						writer.Write([]byte(str + "gt\n"))
-						writer.Flush()
+						handleGt()
 					case "lt":
-						writer.Write([]byte(str + "lt\n"))
-						writer.Flush()
+						handleLt()
 					case "push":
-						writer.Write([]byte(str + "push\n"))
-						writer.Flush()
+						s, err := strconv.Atoi(words[2])
+						if err != nil {
+							fmt.Println("Can't convert this to an int!")
+						} else {
+							handlePush(words[1], s)
+						}
 					case "pop":
-						writer.Write([]byte(str + "pop\n"))
-						writer.Flush()
+						s, err := strconv.Atoi(words[2])
+						if err != nil {
+							fmt.Println("Can't convert this to an int!")
+						} else {
+							handlePop(words[1], s)
+						}
 					default:
-						writer.Write([]byte(str + "unknown\n"))
+						writer.Write([]byte("unknown\n"))
 						writer.Flush()
 					}
 				}
 			}
+			fmt.Println("End of input file: " + file.Name() + "\n")
 		}
 	}
-
+	fmt.Println("Output file is ready: " + write_file.Name() + "\n")
 	// each file hs own loop
 	// in loop have ctr for num of logical commands
 	// have global var for name of file without .vm
-	// read each line to decide helper function - switch
+	// read each line to decide helper function - switch - done
 	// at end of ech file close file and print to screen
 	// after outer loop make print
-	// write the helper functions
+	// write the helper functions - all done
 	// handleAdd, handleSub, handleNeg
 	// handleEq, HandleGt, handleLt
 	// handlePush, handlePop
