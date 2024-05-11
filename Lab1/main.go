@@ -34,3 +34,23 @@ func main() {
 		return
 	}
 }
+
+/*
+Testing Order:
+1. SimpleAdd: This program pushes two constants onto the stack, and adds them up.
+              Tests how your implementation handles the commands “push constant i”, and “add”.
+
+2. StackTest: Pushes some constants onto the stack, and tests how your implementation handles all
+              the VM arithmetic-logical commands.
+              - vm file contains push constant, eq, lg, gt, add, neg, and, or, not
+
+3. BasicTest: Executes push, pop, and arithmetic commands using the memory segments constant,
+              local, argument, this, that, and temp. Tests how your implementation handles these memory
+              segments (you've already handled constant).
+
+4. PointerTest: Executes push, pop, and arithmetic commands using the memory segments pointer,
+                this, and that. Tests how your implementation handles the pointer segment.
+
+5. StaticTest: Executes push, pop, and arithmetic commands using constants and the memory
+               segment static. Tests how your implementation handles the static segment.
+*/
