@@ -1,3 +1,3 @@
-module Lab0
+module Fundementals
 
 go 1.22
