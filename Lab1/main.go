@@ -4,9 +4,14 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
+	"strconv"
+	"strings"
+	// codewriter/codewriter
 )
 
+var CurVM string
 var asm_path string
 var dir_name string
 var asm_file_name string
@@ -33,6 +38,63 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+
+	for _, file := range files {
+		if path.Ext(file.Name()) == ".vm" {
+			CurVM = file.Name()
+			curFile, err := os.Open(dir_path + CurVM)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			defer curFile.Close()
+			reader := bufio.NewReader(curFile)
+			counter = 1
+
+			for {
+				line, err := reader.ReadString('\n')
+				if err != nil {
+					break
+				}
+				words := strings.Fields(line)
+				if len(words) != 0 {
+					switch words[0] {
+					case "add":
+						handleAdd()
+					case "sub":
+						handleSub()
+					case "neg":
+						handleNeg()
+					case "eq":
+						handleEq()
+					case "gt":
+						handleGt()
+					case "lt":
+						handleLt()
+					case "push":
+						s, err := strconv.Atoi(words[2])
+						if err != nil {
+							fmt.Println("Can't convert this to an int!")
+						} else {
+							handlePush(words[1], s)
+						}
+					case "pop":
+						s, err := strconv.Atoi(words[2])
+						if err != nil {
+							fmt.Println("Can't convert this to an int!")
+						} else {
+							handlePop(words[1], s)
+						}
+					default:
+						writer.Write([]byte("unknown\n"))
+						writer.Flush()
+					}
+				}
+			}
+			fmt.Println("End of input file: " + file.Name())
+		}
+	}
+	fmt.Println("Output file is ready: " + asm_file_name)
 }
 
 /*
