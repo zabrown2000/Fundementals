@@ -4,31 +4,67 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	//"strconv"
 )
 
 // TO DO: refactor all these functions to output asm code
 // add in and, not, or
-// 5 functions to add from textbook
+// 5 functions to add from textbook - ctor, setFileName, writeArithmatic, writePushPop, close
 // Zahava: add, sub, neg, and, or, not, push
 // Tali: eq, gt, lt, pop
 
-// opening of file to write need to be part of constructor of writer
-func createWriter() (*bufio.Writer, error) {
+type CodeWriter struct {
+	writer *bufio.Writer
+}
+
+func New(asm_path string) *CodeWriter {
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
 		fmt.Println("File opening error", err)
-		return nil, err
+		return nil
 	}
-	writer := bufio.NewWriter(write_file)
-	return writer, nil
+	return &CodeWriter{bufio.NewWriter(write_file)}
 }
 
-func writeArithmetic(command string) {
-	//all logical and arithmetic commands to be handled here
+// opening of file to write need to be part of constructor of writer
+//func createWriter() (*bufio.Writer, error) {
+//	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+//	if err != nil {
+//		fmt.Println("File opening error", err)
+//		return nil, err
+//	}
+//	writer := bufio.NewWriter(write_file)
+//	return writer, nil
+//}
+
+func (cw *CodeWriter) WriteArithmetic(cmd string) {
+	//need to see how to write to the file
+	var asm string
+	switch cmd {
+	case "add":
+		//asm = "@SP\nAM=M-1\nD=M\nA=A-1\nM=D+M\n"
+	case "sub":
+		//asm = "@SP\nAM=M-1\nD=M\nA=A-1\nM=M-D\n"
+	case "neg":
+		//asm = "@SP\nA=M-1\nM=-M"
+	case "and":
+		//asm = "@SP\nAM=M-1\nD=M\nA=A-1\nM=D&M\n"
+	case "or":
+		//asm = "@SP\nAM=M-1\nD=M\nA=A-1\nM=D|M\n"
+	case "not":
+		//asm = "@SP\nA=M-1\nM=!M\n"
+	case "eq":
+	//tali
+	case "gt":
+	//tali
+	case "gt":
+		//tali
+	}
+
+	cw.writer.Write([]byte(asm))
+	cw.writer.Flush()
 }
 
-func writePushPop(command string, segment string, index int) {
+func (cw *CodeWriter) writePushPop(command string, segment string, index int) {
 	//push and pop commands to be handles here - type of command needs to be C_PUSH or C_POP
 }
 

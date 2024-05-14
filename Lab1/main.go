@@ -34,6 +34,9 @@ func main() {
 		return
 	}
 	defer write_file.Close()
+
+	//maybe here create codewriter and set filename to be asm_file_name
+
 	writer := bufio.NewWriter(write_file)
 
 	files, err := os.ReadDir(dir_path)
