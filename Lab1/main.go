@@ -9,7 +9,10 @@ import (
 	"strconv"
 	"strings"
 	// codewriter/codewriter
+	// parser/parser
 )
+
+//TO DO: clean up main to sync with 2 new modules
 
 var CurVM string
 var asm_path string
@@ -70,7 +73,7 @@ func main() {
 					case "gt":
 						handleGt()
 					case "lt":
-						handleLt()
+						handleLt() // add in and,or,not
 					case "push":
 						s, err := strconv.Atoi(words[2])
 						if err != nil {

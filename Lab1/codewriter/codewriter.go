@@ -8,6 +8,10 @@ import (
 )
 
 // TO DO: refactor all these functions to output asm code
+// add in and, not, or
+// 5 functions to add from textbook
+// Zahava: add, sub, neg, and, or, not, push
+// Tali: eq, gt, lt, pop
 
 func createWriter() (*bufio.Writer, error) {
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
