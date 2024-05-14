@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
+	//"strconv"
 )
 
 // TO DO: refactor all these functions to output asm code
@@ -13,6 +13,7 @@ import (
 // Zahava: add, sub, neg, and, or, not, push
 // Tali: eq, gt, lt, pop
 
+// opening of file to write need to be part of constructor of writer
 func createWriter() (*bufio.Writer, error) {
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
@@ -23,6 +24,15 @@ func createWriter() (*bufio.Writer, error) {
 	return writer, nil
 }
 
+func writeArithmetic(command string) {
+	//all logical and arithmetic commands to be handled here
+}
+
+func writePushPop(command string, segment string, index int) {
+	//push and pop commands to be handles here - type of command needs to be C_PUSH or C_POP
+}
+
+/*
 func handleAdd() {
 	writer, err := createWriter()
 	if err != nil {
@@ -110,4 +120,4 @@ func handlePop(str string, num int) {
 	}
 	writer.Write([]byte("command: pop segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
 	writer.Flush()
-}
+}*/
