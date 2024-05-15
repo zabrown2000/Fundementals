@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 // TO DO: refactor all these functions to output asm code
@@ -13,7 +14,8 @@ import (
 // Tali: eq, gt, lt, pop
 
 type CodeWriter struct {
-	writer *bufio.Writer
+	writer    *bufio.Writer
+	file_name string
 }
 
 func New(asm_path string) *CodeWriter {
@@ -22,41 +24,34 @@ func New(asm_path string) *CodeWriter {
 		fmt.Println("File opening error", err)
 		return nil
 	}
-	return &CodeWriter{bufio.NewWriter(write_file)}
+	return &CodeWriter{bufio.NewWriter(write_file), ""}
 }
 
-// opening of file to write need to be part of constructor of writer
-//func createWriter() (*bufio.Writer, error) {
-//	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
-//	if err != nil {
-//		fmt.Println("File opening error", err)
-//		return nil, err
-//	}
-//	writer := bufio.NewWriter(write_file)
-//	return writer, nil
-//}
+func (cw *CodeWriter) SetFileName(name string) {
+	cw.file_name = name
+}
 
+// TO DO: once all written together, run in emulator to see each step to make sure understand
 func (cw *CodeWriter) WriteArithmetic(cmd string) {
-	//need to see how to write to the file
 	var asm string
 	switch cmd {
 	case "add":
-		//asm = "@SP\nAM=M-1\nD=M\nA=A-1\nM=D+M\n"
+		asm = "//add\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D+M\n"
 	case "sub":
-		//asm = "@SP\nAM=M-1\nD=M\nA=A-1\nM=M-D\n"
+		asm = "//sub\n@SP\nAM=M-1\nD=M\nA=A-1\nM=M-D\n"
 	case "neg":
-		//asm = "@SP\nA=M-1\nM=-M"
+		asm = "//neg\n@SP\nA=M-1\nM=-M"
 	case "and":
-		//asm = "@SP\nAM=M-1\nD=M\nA=A-1\nM=D&M\n"
+		asm = "//and\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D&M\n"
 	case "or":
-		//asm = "@SP\nAM=M-1\nD=M\nA=A-1\nM=D|M\n"
+		asm = "//or\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D|M\n"
 	case "not":
-		//asm = "@SP\nA=M-1\nM=!M\n"
+		asm = "//not\n@SP\nA=M-1\nM=!M\n"
 	case "eq":
 	//tali
 	case "gt":
 	//tali
-	case "gt":
+	case "lt":
 		//tali
 	}
 
@@ -64,41 +59,41 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 	cw.writer.Flush()
 }
 
+// maybe refactor and make subfunctions
 func (cw *CodeWriter) writePushPop(command string, segment string, index int) {
-	//push and pop commands to be handles here - type of command needs to be C_PUSH or C_POP
+	var asm string
+	index_str := strconv.Itoa(index)
+	if command == "C_PUSH" {
+		switch segment {
+		case "constant":
+			asm = "@" + index_str + "\nD=A\n"
+		case "local":
+			asm = "@LCL\nD=M\n@" + index_str + "\nA=D+A\nD=M\n"
+		case "argument":
+			asm = "@ARG\nD=M\n@" + index_str + "\nA=D+A\nD=M\n"
+		case "this":
+			asm = "@THIS\nD=M\n@" + index_str + "\nA=D+A\nD=M\n"
+		case "that":
+			asm = "@THAT\nD=M\n@" + index_str + "\nA=D+A\nD=M\n"
+		case "pointer":
+			if index == 0 {
+				asm = "@THIS\nD=M\n"
+			} else {
+				asm = "@THAT\nD=M\n"
+			}
+		case "static":
+			asm = "@" + cw.file_name + "." + index_str + "\nD=M\n"
+		case "temp":
+			asm = "@R5\nD=A\n@" + index_str + "\nA=D+A\nD=M\n"
+		}
+	} else if command == "C_POP" {
+		//insert pop stuff here
+	}
+	cw.writer.Write([]byte(asm))
+	cw.writer.Flush()
 }
 
 /*
-func handleAdd() {
-	writer, err := createWriter()
-	if err != nil {
-		fmt.Println("Error creating writer:", err)
-		return
-	}
-	writer.Write([]byte("command: add\n"))
-	writer.Flush()
-}
-
-func handleSub() {
-	writer, err := createWriter()
-	if err != nil {
-		fmt.Println("Error creating writer:", err)
-		return
-	}
-	writer.Write([]byte("command: sub\n"))
-	writer.Flush()
-}
-
-func handleNeg() {
-	writer, err := createWriter()
-	if err != nil {
-		fmt.Println("Error creating writer:", err)
-		return
-	}
-	writer.Write([]byte("command: neg\n"))
-	writer.Flush()
-}
-
 func handleEq() {
 	writer, err := createWriter()
 	if err != nil {
@@ -138,15 +133,6 @@ func handleLt() {
 	counter++
 }
 
-func handlePush(str string, num int) {
-	writer, err := createWriter()
-	if err != nil {
-		fmt.Println("Error creating writer:", err)
-		return
-	}
-	writer.Write([]byte("command: push segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
-	writer.Flush()
-}
 
 func handlePop(str string, num int) {
 	writer, err := createWriter()
