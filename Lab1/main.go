@@ -28,8 +28,9 @@ func main() {
 	asm_file_name = dir_name + ".asm"
 	asm_path = dir_path + asm_file_name
 
-	//TO DO: zahava - create codewriter object and call setfilename and send asm_file_name
+	//TO DO: zahava - create codewriter object and call setfilename and send current vm file name
 	//       zahava - create shell code for entire process using parser and codewriter
+	// in loop for each vm file, each vm file call setFileName and send name without .vm attached
 
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
