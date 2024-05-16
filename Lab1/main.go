@@ -29,6 +29,7 @@ func main() {
 	asm_path = dir_path + asm_file_name
 
 	//TO DO: zahava - create codewriter object and call setfilename and send asm_file_name
+	//       zahava - create shell code for entire process using parser and codewriter
 
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
