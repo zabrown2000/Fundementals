@@ -9,7 +9,7 @@ import (
 
 // TO DO: refactor all these functions to output asm code
 // add in and, not, or
-// 5 functions to add from textbook - ctor, setFileName, writeArithmatic, writePushPop, close
+// 5 functions to add from textbook - ctor, setFileName, writeArithmetic, writePushPop, close
 // Zahava: add, sub, neg, and, or, not, push
 // Tali: eq, gt, lt, pop
 
@@ -64,11 +64,11 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		// it back in that same spot -> move SP back down to next empty spot
 		asm = "//not\n@SP\nA=M-1\nM=!M\n@SP\nM=M+1\n"
 	case "eq":
-	//tali
+		asm = "//equal\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_EQ_LABEL\nD;JEQ\n//Not_Equal\n@SP\nM=0\n@END_EQ_LABEL\n0;JMP\n(IS_EQ_LABEL)\n@SP\nM=-1\n@END_EQ_LABEL\n0;JMP\n(END_EQ_LABEL)\n"
 	case "gt":
-	//tali
+		asm = "//gt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_GT_LABEL\nD;JGT\n//Not_GT\n@SP\nM=0\n@END_GT_LABEL\n0;JMP\n(IS_GT_LABEL)\n@SP\nM=-1\n@END_GT_LABEL\n0;JMP\n(END_GT_LABEL)\n"
 	case "lt":
-		//tali
+		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL\nD;JLT\n//Not_LT\n@SP\nM=0\n@END_LT_LABEL\n0;JMP\n(IS_LT_LABEL)\n@SP\nM=-1\n@END_LT_LABEL\n0;JMP\n(END_LT_LABEL)\n"
 	}
 
 	cw.writer.Write([]byte(asm))
@@ -129,7 +129,29 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 	} else if command == "pop" {
 		//insert pop stuff here
 		cw.writer.Write([]byte(" //pop " + segment + " " + index_str))
+		switch segment {
+		case "constant":
+			asm = "@SP\nM=M-1\nD=M\n"
+		case "local":
+			asm = "@LCL\nD=M\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
+		case "argument":
+			asm = "@ARG\nD=M\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
+		case "this":
+			asm = "@THIS\nD=M\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
+		case "that":
+			asm = "@THAT\nD=M\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
+		case "pointer":
+			if index == 0 {
+				asm = "@SP\nAM=M-1\nD=M\n@THIS\nM=D\n"
+			} else if index == 1 {
+				asm = "@SP\nAM=M-1\nD=M\n@THAT\nM=D\n"
+			}
+		case "temp":
+			asm = "@R5\nD=A\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
+		case "static":
+			asm = "@" + cw.file_name + "." + index_str + "\nD=A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
+		}
+		cw.writer.Write([]byte(asm))
+		cw.writer.Flush()
 	}
-	cw.writer.Write([]byte(asm))
-	cw.writer.Flush()
 }
