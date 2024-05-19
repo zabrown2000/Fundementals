@@ -1,15 +1,13 @@
 package main
 
 import (
-	"bufio"
+	"Fundementals/Lab1/codewriter"
+	"Fundementals/Lab1/parser"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
-	// codewriter/codewriter
-	// parser/parser
 )
 
 //TO DO: clean up main to sync with 2 new modules
@@ -32,76 +30,44 @@ func main() {
 	//       zahava - create shell code for entire process using parser and codewriter
 	// in loop for each vm file, each vm file call setFileName and send name without .vm attached
 
-	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
-	if err != nil {
-		fmt.Println("File opening error", err)
-		return
-	}
-	defer write_file.Close()
+	// create codewriter obj and send file to open to write
+	cw := codewriter.New(asm_path)
 
-	//maybe here create codewriter and set filename to be asm_file_name
-
-	writer := bufio.NewWriter(write_file)
+	//writer := bufio.NewWriter(write_file) - get from codewriter
 
 	files, err := os.ReadDir(dir_path)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+	// create loop for dir
 
+	// if arith get cmd type from arg1, and call writearith
+	// if push or pop call the pushpop func and send arg1 and arg2
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".vm" {
+			// call setfilename and send file name without vm - basically dir_name
+			// fileNameWithoutExt := strings.TrimSuffix(filePath, ".vm")
+			cw.SetFileName(dir_name)
 			CurVM = file.Name()
-			curFile, err := os.Open(dir_path + CurVM)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			defer curFile.Close()
-			reader := bufio.NewReader(curFile)
-			counter = 1
+			cw.SetFileName(strings.TrimSuffix(CurVM, ".vm"))
+			// each vm file, create parser obj and send file to open to read
 
 			for {
-				line, err := reader.ReadString('\n')
-				if err != nil {
-					break
-				}
-				words := strings.Fields(line)
-				if len(words) != 0 {
-					switch words[0] {
-					case "add":
-						handleAdd()
-					case "sub":
-						handleSub()
-					case "neg":
-						handleNeg()
-					case "eq":
-						handleEq()
-					case "gt":
-						handleGt()
-					case "lt":
-						handleLt() // add in and,or,not
-					case "push":
-						s, err := strconv.Atoi(words[2])
-						if err != nil {
-							fmt.Println("Can't convert this to an int!")
-						} else {
-							handlePush(words[1], s)
-						}
-					case "pop":
-						s, err := strconv.Atoi(words[2])
-						if err != nil {
-							fmt.Println("Can't convert this to an int!")
-						} else {
-							handlePop(words[1], s)
-						}
-					default:
-						writer.Write([]byte("unknown\n"))
-						writer.Flush()
-					}
+				// for each file call parser to read the line and return type of command and args
+				cmdType = parser.commandType(...)
+				switch cmdType {
+				case parser.C_ARITHMETIC:
+					//get arg1 and send in below func
+					cw.WriteArithmetic()
+				case parser.C_PUSH:
+					//get arg1 and arg2 and send
+					cw.WritePushPop("push")
+				case parser.C_POP:
+					//get arg1 and arg2 and send
+					cw.WritePushPop("pop")
 				}
 			}
-			fmt.Println("End of input file: " + file.Name())
 		}
 	}
 	fmt.Println("Output file is ready: " + asm_file_name)

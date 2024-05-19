@@ -76,10 +76,10 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 }
 
 // maybe refactor and make subfunctions
-func (cw *CodeWriter) writePushPop(command string, segment string, index int) {
+func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 	var asm string
 	index_str := strconv.Itoa(index)
-	if command == "C_PUSH" {
+	if command == "push" {
 		cw.writer.Write([]byte(" //push " + segment + " " + index_str))
 		switch segment {
 		case "constant":
@@ -126,7 +126,7 @@ func (cw *CodeWriter) writePushPop(command string, segment string, index int) {
 			// in next open spot in stack -> move SP down 1 to next open spot
 			asm = "@" + cw.file_name + "." + index_str + "\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
 		}
-	} else if command == "C_POP" {
+	} else if command == "pop" {
 		//insert pop stuff here
 		cw.writer.Write([]byte(" //pop " + segment + " " + index_str))
 	}
