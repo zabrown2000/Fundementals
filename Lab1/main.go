@@ -17,6 +17,10 @@ var asm_path string
 var dir_name string
 var asm_file_name string
 
+func validCommand() {
+
+}
+
 func main() {
 	// get path from user
 	fmt.Println("Enter path to folder")
@@ -58,6 +62,7 @@ func main() {
 			}
 			for {
 				// for each file call parser to read the line and return type of command and args
+
 				cmdType := psr.CommandType()
 				switch cmdType {
 				case parser.C_ARITHMETIC:
@@ -74,6 +79,11 @@ func main() {
 					arg1 := psr.Arg1()
 					arg2 := psr.Arg2()
 					cw.WritePushPop("pop", arg1, arg2)
+				case -1: //not a valid commandtype returned
+					if psr.HasMoreLines() { //but still more lines
+						psr.Advance()
+						continue
+					}
 				default:
 					panic("unhandled default case")
 				}

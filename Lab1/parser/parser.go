@@ -47,27 +47,12 @@ func (p *Parser) HasMoreLines() bool {
 
 // parseNextLine parses the next line of text, removing comments, whitespace, and empty lines
 func (p *Parser) parseNextLine() {
-	for {
-		line, err := p.reader.ReadString('\n')
-		if err != nil {
-			break
-		}
-		if len(line) == 0 {
-			if !p.HasMoreLines() {
-				break // Exit the loop if there are no more lines
-			}
-			p.Advance() // Move to the next line
-			continue    // Skip empty lines
-		}
-		if comment := strings.Index(line, "//"); comment > -1 {
-			line = strings.TrimSpace(line[:comment])
-		} else {
-			line = strings.TrimSpace(line)
-		}
-		p.currentLine = line
-		return // Exit the function after updating currentLine
-
+	line, err := p.reader.ReadString('\n')
+	if err != nil {
+		panic("err - couldn't get a line!")
 	}
+	p.currentLine = line
+	return // Exit the function after updating currentLine
 }
 
 /*
