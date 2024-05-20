@@ -48,26 +48,43 @@ func main() {
 		if path.Ext(file.Name()) == ".vm" {
 			// call setfilename and send file name without vm - basically dir_name
 			// fileNameWithoutExt := strings.TrimSuffix(filePath, ".vm")
-			cw.SetFileName(dir_name)
 			CurVM = file.Name()
 			cw.SetFileName(strings.TrimSuffix(CurVM, ".vm"))
 			// each vm file, create parser obj and send file to open to read
-
+			psr, err := parser.New(dir_path + CurVM)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
 			for {
 				// for each file call parser to read the line and return type of command and args
-				cmdType = parser.commandType(...)
+				cmdType := psr.CommandType()
 				switch cmdType {
 				case parser.C_ARITHMETIC:
 					//get arg1 and send in below func
-					cw.WriteArithmetic()
+					arg1 := psr.Arg1()
+					cw.WriteArithmetic(arg1)
 				case parser.C_PUSH:
 					//get arg1 and arg2 and send
-					cw.WritePushPop("push")
+					arg1 := psr.Arg1()
+					arg2 := psr.Arg2()
+					cw.WritePushPop("push", arg1, arg2)
 				case parser.C_POP:
 					//get arg1 and arg2 and send
-					cw.WritePushPop("pop")
+					arg1 := psr.Arg1()
+					arg2 := psr.Arg2()
+					cw.WritePushPop("pop", arg1, arg2)
+				default:
+					panic("unhandled default case")
+				}
+				// check if more lines and then if not break
+				if psr.HasMoreLines() {
+					psr.Advance()
+				} else {
+					break
 				}
 			}
+			fmt.Println("End of input file: " + file.Name())
 		}
 	}
 	fmt.Println("Output file is ready: " + asm_file_name)

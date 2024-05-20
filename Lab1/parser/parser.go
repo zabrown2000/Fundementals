@@ -31,17 +31,17 @@ func New(path string) (*Parser, error) {
 	reader := bufio.NewReader(f)
 	scanner := bufio.NewScanner(reader)
 	p := &Parser{file: f, scanner: scanner}
-	p.advance() // Advance to the first line
+	p.Advance() // Advance to the first line
 	return p, nil
 }
 
 // advance moves to the next line and updates currentLine and hasMore
-func (p *Parser) advance() {
+func (p *Parser) Advance() {
 	p.parseNextLine()
 }
 
 // HasMoreLines returns true if there are more lines to be parsed
-func (p *Parser) hasMoreLines() bool {
+func (p *Parser) HasMoreLines() bool {
 	return p.scanner.Scan()
 }
 
@@ -53,10 +53,10 @@ func (p *Parser) parseNextLine() {
 			break
 		}
 		if len(line) == 0 {
-			if !p.hasMoreLines() {
+			if !p.HasMoreLines() {
 				break // Exit the loop if there are no more lines
 			}
-			p.advance() // Move to the next line
+			p.Advance() // Move to the next line
 			continue    // Skip empty lines
 		}
 		if comment := strings.Index(line, "//"); comment > -1 {
@@ -97,7 +97,7 @@ const (
 	C_CALL                          // call
 )
 
-func (p *Parser) commandType() CommandType {
+func (p *Parser) CommandType() CommandType {
 	line := p.currentLine
 	// Split the line into tokens based on whitespace characters
 	tokens := strings.Fields(line)
@@ -130,14 +130,14 @@ func (p *Parser) commandType() CommandType {
 }
 
 // arg1 returns the first word of currentLine if it is of type arithmetic, otherwise it returns the second word.
-func (p *Parser) arg1() string {
+func (p *Parser) Arg1() string {
 	line := p.currentLine
 	// Split the line into tokens based on whitespace characters
 	tokens := strings.Fields(line)
 	if len(tokens) == 0 {
 		return "" // Empty string if there are no tokens
 	}
-	if p.commandType() == C_ARITHMETIC {
+	if p.CommandType() == C_ARITHMETIC {
 		return tokens[0] // First word for arithmetic commands
 	} else if len(tokens) >= 2 {
 		return tokens[1] // Second word for other commands
@@ -146,7 +146,7 @@ func (p *Parser) arg1() string {
 }
 
 // arg2 returns the third word of currentLine if it exists, otherwise it returns an empty string.
-func (p *Parser) arg2() int {
+func (p *Parser) Arg2() int {
 	line := p.currentLine
 	// Split the line into tokens based on whitespace characters
 	tokens := strings.Fields(line)
