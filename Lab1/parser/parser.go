@@ -17,8 +17,8 @@ type CommandType int
 //constructor
 
 type Parser struct {
-	file        *os.File
-	scanner     *bufio.Scanner
+	file *os.File
+	//scanner     *bufio.Scanner
 	currentLine string
 	reader      *bufio.Reader
 }
@@ -30,8 +30,9 @@ func New(path string) (*Parser, error) {
 		return nil, err
 	}
 	reader := bufio.NewReader(f)
-	scanner := bufio.NewScanner(reader)
-	p := &Parser{file: f, scanner: scanner, reader: reader}
+	//scanner := bufio.NewScanner(reader)
+	//p := &Parser{file: f, scanner: scanner, reader: reader}
+	p := &Parser{file: f, reader: reader}
 	p.Advance() // Advance to the first line
 	return p, nil
 }
@@ -43,7 +44,9 @@ func (p *Parser) Advance() {
 
 // HasMoreLines returns true if there are more lines to be parsed
 func (p *Parser) HasMoreLines() bool {
-	return p.scanner.Scan()
+	_, err := p.reader.Peek(1) // Peek to check for more lines without advancing
+	return err == nil
+	//	return p.scanner.Scan()
 }
 
 // parseNextLine parses the next line of text, removing comments, whitespace, and empty lines
@@ -60,6 +63,8 @@ func (p *Parser) parseNextLine() {
 	fmt.Println("after read line")
 	fmt.Println(line)
 	p.currentLine = line
+	fmt.Println("updated current line")
+	fmt.Println(p.currentLine)
 	return // Exit the function after updating currentLine
 }
 
