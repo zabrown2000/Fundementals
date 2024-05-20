@@ -7,17 +7,12 @@ import (
 	"strconv"
 )
 
-// TO DO: refactor all these functions to output asm code
-// add in and, not, or
-// 5 functions to add from textbook - ctor, setFileName, writeArithmetic, writePushPop, close
-// Zahava: add, sub, neg, and, or, not, push
-// Tali: eq, gt, lt, pop
-
 type CodeWriter struct {
 	writer    *bufio.Writer
 	file_name string
 }
 
+// New creates a new CodeWriter instance for a given file path
 func New(asm_path string) *CodeWriter {
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
@@ -27,11 +22,12 @@ func New(asm_path string) *CodeWriter {
 	return &CodeWriter{bufio.NewWriter(write_file), ""}
 }
 
+// SetFileName sets the file name for the current vm file for dealing with static segment
 func (cw *CodeWriter) SetFileName(name string) {
 	cw.file_name = name
 }
 
-// TO DO: once all written together, run in emulator to see each step to make sure understand
+// WriteArithmetic writes the assembly code for the given VM arithmetic command
 func (cw *CodeWriter) WriteArithmetic(cmd string) {
 	var asm string
 	switch cmd {
@@ -75,7 +71,7 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 	cw.writer.Flush()
 }
 
-// maybe refactor and make subfunctions
+// WritePushPop writes the assembly code for the given VM push/pop command
 func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 	var asm string
 	index_str := strconv.Itoa(index)
