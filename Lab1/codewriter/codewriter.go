@@ -35,7 +35,8 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store sum of D and value in that spot in that space in the stack -> move SP back down
 		// to next empty spot
-		asm = "//add\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D+M\n@SP\nM=M+1\n"
+		//asm = "//add\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D+M\n@SP\nM=M+1\n"
+		asm = "//add\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nM=D+M\n@SP\nM=M+1\n"
 	case "sub":
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store difference of value in that spot and D in that space in the stack -> move SP back
@@ -157,14 +158,24 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 		case "that":
 			asm = "@THAT\nD=M\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
 		case "pointer":
+			// based on index decide if taking this or that segment address -> store the segment in D
+			// -> place segment in next open spot in stack -> move SP down 1 to next open spot
 			if index == 0 {
 				asm = "@SP\nAM=M-1\nD=M\n@THIS\nM=D\n"
 			} else if index == 1 {
 				asm = "@SP\nAM=M-1\nD=M\n@THAT\nM=D\n"
 			}
 		case "temp":
+			// get address of beginning of temp registers and move down to correct one based on index
+			// calculate the new address in D, then store it in R13,
+			// Load SP, decrease it to pop top value into D,
+			// reload temp register address from R13 and store D at the corresponding address
 			asm = "@R5\nD=A\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
 		case "static":
+			// determine class name and # static field we are up to -> A becomes the index+1-th register
+			// address in the static segment -> store that address in R13
+			// Load SP, decrease it to pop top value into D,
+			// reload static address from R13 and store value in D there
 			asm = "@" + cw.file_name + "." + index_str + "\nD=A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
 		}
 	}
