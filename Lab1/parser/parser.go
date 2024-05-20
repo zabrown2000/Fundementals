@@ -2,6 +2,8 @@ package parser
 
 import (
 	"bufio"
+	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -18,7 +20,6 @@ type Parser struct {
 	file        *os.File
 	scanner     *bufio.Scanner
 	currentLine string
-	hasMore     bool
 	reader      *bufio.Reader
 }
 
@@ -30,7 +31,7 @@ func New(path string) (*Parser, error) {
 	}
 	reader := bufio.NewReader(f)
 	scanner := bufio.NewScanner(reader)
-	p := &Parser{file: f, scanner: scanner}
+	p := &Parser{file: f, scanner: scanner, reader: reader}
 	p.Advance() // Advance to the first line
 	return p, nil
 }
@@ -47,10 +48,17 @@ func (p *Parser) HasMoreLines() bool {
 
 // parseNextLine parses the next line of text, removing comments, whitespace, and empty lines
 func (p *Parser) parseNextLine() {
+	fmt.Println("before read line")
 	line, err := p.reader.ReadString('\n')
 	if err != nil {
-		panic("err - couldn't get a line!")
+		if err == io.EOF {
+			p.currentLine = "" // Indicate no more lines
+			return
+		}
+		panic(fmt.Sprintf("err - couldn't get a line! %v", err))
 	}
+	fmt.Println("after read line")
+	fmt.Println(line)
 	p.currentLine = line
 	return // Exit the function after updating currentLine
 }

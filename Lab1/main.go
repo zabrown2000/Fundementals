@@ -62,35 +62,47 @@ func main() {
 			}
 			for {
 				// for each file call parser to read the line and return type of command and args
-
+				fmt.Println("before cmdtype, main")
 				cmdType := psr.CommandType()
+				fmt.Println("after cmdtype, main")
+				fmt.Println(cmdType)
 				switch cmdType {
 				case parser.C_ARITHMETIC:
 					//get arg1 and send in below func
+					fmt.Println("C_ARITHMETIC")
 					arg1 := psr.Arg1()
 					cw.WriteArithmetic(arg1)
 				case parser.C_PUSH:
 					//get arg1 and arg2 and send
+					fmt.Println("C_PUSH")
 					arg1 := psr.Arg1()
 					arg2 := psr.Arg2()
 					cw.WritePushPop("push", arg1, arg2)
 				case parser.C_POP:
 					//get arg1 and arg2 and send
+					fmt.Println("C_POP")
 					arg1 := psr.Arg1()
 					arg2 := psr.Arg2()
 					cw.WritePushPop("pop", arg1, arg2)
 				case -1: //not a valid commandtype returned
+					fmt.Println("something else")
 					if psr.HasMoreLines() { //but still more lines
+						fmt.Println("something else - more lines detected")
 						psr.Advance()
+						fmt.Println("something else - after advance lines")
 						continue
 					}
 				default:
 					panic("unhandled default case")
 				}
 				// check if more lines and then if not break
+				fmt.Println("before hasmorelines after switch")
 				if psr.HasMoreLines() {
+					fmt.Println("have more lines detected after switch")
 					psr.Advance()
+					fmt.Println("advanced lines detected after switch")
 				} else {
+					fmt.Println("no more lines detected after switch")
 					break
 				}
 			}
