@@ -82,7 +82,11 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 	var asm string
 	index_str := strconv.Itoa(index)
 	if command == "push" {
-		_, err := cw.writer.Write([]byte(" //push " + segment + " " + index_str))
+		_, err := cw.writer.Write([]byte(" //push " + segment + " " + index_str + "\n"))
+		if err != nil {
+			return
+		}
+		err = cw.writer.Flush()
 		if err != nil {
 			return
 		}
@@ -133,7 +137,11 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 		}
 	} else if command == "pop" {
 		//insert pop stuff here
-		_, err := cw.writer.Write([]byte(" //pop " + segment + " " + index_str))
+		_, err := cw.writer.Write([]byte(" //pop " + segment + " " + index_str + "\n"))
+		if err != nil {
+			return
+		}
+		err = cw.writer.Flush()
 		if err != nil {
 			return
 		}
