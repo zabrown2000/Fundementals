@@ -19,6 +19,7 @@ type Parser struct {
 	scanner     *bufio.Scanner
 	currentLine string
 	hasMore     bool
+	reader      *bufio.Reader
 }
 
 // New creates a new Parser instance for a given file path
@@ -46,11 +47,17 @@ func (p *Parser) hasMoreLines() bool {
 
 // parseNextLine parses the next line of text, removing comments, whitespace, and empty lines
 func (p *Parser) parseNextLine() {
-	for p.hasMoreLines() {
-		p.advance() // Move to the next line
-		line := p.currentLine
+	for {
+		line, err := p.reader.ReadString('\n')
+		if err != nil {
+			break
+		}
 		if len(line) == 0 {
-			continue // Skip empty lines
+			if !p.hasMoreLines() {
+				break // Exit the loop if there are no more lines
+			}
+			p.advance() // Move to the next line
+			continue    // Skip empty lines
 		}
 		if comment := strings.Index(line, "//"); comment > -1 {
 			line = strings.TrimSpace(line[:comment])
@@ -59,6 +66,7 @@ func (p *Parser) parseNextLine() {
 		}
 		p.currentLine = line
 		return // Exit the function after updating currentLine
+
 	}
 }
 
