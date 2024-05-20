@@ -60,11 +60,11 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		// it back in that same spot -> move SP back down to next empty spot
 		asm = "//not\n@SP\nA=M-1\nM=!M\n@SP\nM=M+1\n"
 	case "eq":
-		asm = "//equal\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_EQ_LABEL\nD;JEQ\n//Not_Equal\n@SP\nM=0\n@END_EQ_LABEL\n0;JMP\n(IS_EQ_LABEL)\n@SP\nM=-1\n@END_EQ_LABEL\n0;JMP\n(END_EQ_LABEL)\n"
+		asm = "//equal\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_EQ_LABEL\nD;JEQ\n//Not_Equal\n@SP\nA=M\nM=0\n@END_EQ_LABEL\n0;JMP\n(IS_EQ_LABEL)\n@SP\nA=M\nM=-1\n@END_EQ_LABEL\n0;JMP\n(END_EQ_LABEL)\n"
 	case "gt":
-		asm = "//gt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_GT_LABEL\nD;JGT\n//Not_GT\n@SP\nM=0\n@END_GT_LABEL\n0;JMP\n(IS_GT_LABEL)\n@SP\nM=-1\n@END_GT_LABEL\n0;JMP\n(END_GT_LABEL)\n"
+		asm = "//gt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_GT_LABEL\nD;JGT\n//Not_GT\n@SP\nA=M\nM=0\n@END_GT_LABEL\n0;JMP\n(IS_GT_LABEL)\n@SP\nA=M\nM=-1\n@END_GT_LABEL\n0;JMP\n(END_GT_LABEL)\n"
 	case "lt":
-		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL\nD;JLT\n//Not_LT\n@SP\nM=0\n@END_LT_LABEL\n0;JMP\n(IS_LT_LABEL)\n@SP\nM=-1\n@END_LT_LABEL\n0;JMP\n(END_LT_LABEL)\n"
+		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL\nD;JLT\n//Not_LT\n@SP\nA=M\nM=0\n@END_LT_LABEL\n0;JMP\n(IS_LT_LABEL)\n@SP\nA=M\nM=-1\n@END_LT_LABEL\n0;JMP\n(END_LT_LABEL)\n"
 	}
 
 	_, err := cw.writer.Write([]byte(asm))
