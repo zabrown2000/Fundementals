@@ -67,8 +67,14 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL\nD;JLT\n//Not_LT\n@SP\nM=0\n@END_LT_LABEL\n0;JMP\n(IS_LT_LABEL)\n@SP\nM=-1\n@END_LT_LABEL\n0;JMP\n(END_LT_LABEL)\n"
 	}
 
-	cw.writer.Write([]byte(asm))
-	cw.writer.Flush()
+	_, err := cw.writer.Write([]byte(asm))
+	if err != nil {
+		return
+	}
+	err = cw.writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 // WritePushPop writes the assembly code for the given VM push/pop command
@@ -76,7 +82,10 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 	var asm string
 	index_str := strconv.Itoa(index)
 	if command == "push" {
-		cw.writer.Write([]byte(" //push " + segment + " " + index_str))
+		_, err := cw.writer.Write([]byte(" //push " + segment + " " + index_str))
+		if err != nil {
+			return
+		}
 		switch segment {
 		case "constant":
 			// put value to go in stack in A and then D -> set A to next open spot in stack and place
@@ -124,7 +133,10 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 		}
 	} else if command == "pop" {
 		//insert pop stuff here
-		cw.writer.Write([]byte(" //pop " + segment + " " + index_str))
+		_, err := cw.writer.Write([]byte(" //pop " + segment + " " + index_str))
+		if err != nil {
+			return
+		}
 		switch segment {
 		case "constant":
 			asm = "@SP\nM=M-1\nD=M\n"
@@ -147,7 +159,13 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 		case "static":
 			asm = "@" + cw.file_name + "." + index_str + "\nD=A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
 		}
-		cw.writer.Write([]byte(asm))
-		cw.writer.Flush()
+		_, err = cw.writer.Write([]byte(asm))
+		if err != nil {
+			return
+		}
+		err = cw.writer.Flush()
+		if err != nil {
+			return
+		}
 	}
 }
