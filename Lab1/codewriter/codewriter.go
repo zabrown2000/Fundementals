@@ -41,11 +41,13 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store difference of value in that spot and D in that space in the stack -> move SP back
 		// down to next empty spot
-		asm = "//sub\n@SP\nAM=M-1\nD=M\nA=A-1\nM=M-D\n@SP\nM=M+1\n"
+		//asm = "//sub\n@SP\nAM=M-1\nD=M\nA=A-1\nM=M-D\n@SP\nM=M+1\n"
+		asm = "//sub\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nM=M-D\n@SP\nM=M+1\n"
 	case "neg":
 		// move stack pointer to top of stack -> negate the value in that spot and store
 		// it back in that same spot -> move SP back down to next empty spot
-		asm = "//neg\n@SP\nA=M-1\nM=-M\n@SP\nM=M+1\n"
+		//asm = "//neg\n@SP\nA=M-1\nM=-M\n@SP\nM=M+1\n"
+		asm = "//neg\n@SP\nAM=M-1\nM=-M\n@SP\nM=M+1\n"
 	case "and":
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store the and-ing of D and value in that spot in that space in the stack -> move SP back
@@ -57,14 +59,27 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		// down to next empty spot
 		asm = "//or\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D|M\n@SP\nM=M+1\n"
 	case "not":
-		// move stack pointer to top of stack -> not the value in that spot and store
+		// move stack pointer to top of stack -> note the value in that spot and store
 		// it back in that same spot -> move SP back down to next empty spot
-		asm = "//not\n@SP\nA=M-1\nM=!M\n@SP\nM=M+1\n"
+		//asm = "//not\n@SP\nA=M-1\nM=!M\n@SP\nM=M+1\n"
+		asm = "//not\n@SP\nAM=M-1\nM=!M\n@SP\nM=M+1\n"
 	case "eq":
+		// move SP to top of stack and store value in D
+		//decrease the SP and subtract the value in D from the contents in M and store in D
+		//if D = 0 jump to label IS-EQ, load the SP and set contents of stack at SP to -1 (true)
+		// else load SP and set content of stack to 0 (false) -> move SP back down to next empty spot
 		asm = "//equal\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_EQ_LABEL\nD;JEQ\n//Not_Equal\n@SP\nA=M\nM=0\n@END_EQ_LABEL\n0;JMP\n(IS_EQ_LABEL)\n@SP\nA=M\nM=-1\n(END_EQ_LABEL)\n@SP\nM=M+1\n"
 	case "gt":
+		// move SP to top of stack and store value in D
+		//decrease the SP and subtract the value in D from the contents in M and store in D
+		//if D > 0 jump to label IS-GT, load the SP and set contents of stack at SP to -1 (true)
+		// else load SP and set content of stack to 0 (false) -> move SP back down to next empty spot
 		asm = "//gt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_GT_LABEL\nD;JGT\n//Not_GT\n@SP\nA=M\nM=0\n@END_GT_LABEL\n0;JMP\n(IS_GT_LABEL)\n@SP\nA=M\nM=-1\n(END_GT_LABEL)\n@SP\nM=M+1\n"
 	case "lt":
+		// move SP to top of stack and store value in D
+		//decrease the SP and subtract the value in D from the contents in M and store in D
+		//if D < 0 jump to label IS-LT, load the SP and set contents of stack at SP to -1 (true)
+		// else load SP and set content of stack to 0 (false) -> move SP back down to next empty spot
 		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL\nD;JLT\n//Not_LT\n@SP\nA=M\nM=0\n@END_LT_LABEL\n0;JMP\n(IS_LT_LABEL)\n@SP\nA=M\nM=-1\n(END_LT_LABEL)\n@SP\nM=M+1\n"
 	}
 
