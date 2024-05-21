@@ -1,5 +1,3 @@
-// Zahava Brown - 557029367
-// Tali Cohen - 329651871
 package main
 
 import (
@@ -34,8 +32,14 @@ func handleAdd() {
 		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer.Write([]byte("command: add\n"))
-	writer.Flush()
+	_, err = writer.Write([]byte("command: add\n"))
+	if err != nil {
+		return
+	}
+	err = writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 func handleSub() {
@@ -44,8 +48,14 @@ func handleSub() {
 		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer.Write([]byte("command: sub\n"))
-	writer.Flush()
+	_, err = writer.Write([]byte("command: sub\n"))
+	if err != nil {
+		return
+	}
+	err = writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 func handleNeg() {
@@ -54,8 +64,14 @@ func handleNeg() {
 		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer.Write([]byte("command: neg\n"))
-	writer.Flush()
+	_, err = writer.Write([]byte("command: neg\n"))
+	if err != nil {
+		return
+	}
+	err = writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 func handleEq() {
@@ -66,8 +82,14 @@ func handleEq() {
 	}
 	str := strconv.Itoa(counter)
 	str = str + "\n"
-	writer.Write([]byte("command: eq\ncounter: " + str))
-	writer.Flush()
+	_, err = writer.Write([]byte("command: eq\ncounter: " + str))
+	if err != nil {
+		return
+	}
+	err = writer.Flush()
+	if err != nil {
+		return
+	}
 	counter++
 }
 
@@ -79,8 +101,14 @@ func handleGt() {
 	}
 	str := strconv.Itoa(counter)
 	str = str + "\n"
-	writer.Write([]byte("command: gt\ncounter: " + str))
-	writer.Flush()
+	_, err = writer.Write([]byte("command: gt\ncounter: " + str))
+	if err != nil {
+		return
+	}
+	err = writer.Flush()
+	if err != nil {
+		return
+	}
 	counter++
 }
 
@@ -92,8 +120,14 @@ func handleLt() {
 	}
 	str := strconv.Itoa(counter)
 	str = str + "\n"
-	writer.Write([]byte("command: lt\ncounter: " + str))
-	writer.Flush()
+	_, err = writer.Write([]byte("command: lt\ncounter: " + str))
+	if err != nil {
+		return
+	}
+	err = writer.Flush()
+	if err != nil {
+		return
+	}
 	counter++
 }
 
@@ -103,8 +137,14 @@ func handlePush(str string, num int) {
 		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer.Write([]byte("command: push segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
-	writer.Flush()
+	_, err = writer.Write([]byte("command: push segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
+	if err != nil {
+		return
+	}
+	err = writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 func handlePop(str string, num int) {
@@ -113,15 +153,24 @@ func handlePop(str string, num int) {
 		fmt.Println("Error creating writer:", err)
 		return
 	}
-	writer.Write([]byte("command: pop segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
-	writer.Flush()
+	_, err = writer.Write([]byte("command: pop segment: " + str + " index: " + strconv.Itoa(num) + "\n"))
+	if err != nil {
+		return
+	}
+	err = writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 func main() {
 	// get path from user
 	fmt.Println("Enter path to folder")
 	var dir_path string
-	fmt.Scanln(&dir_path)
+	_, err := fmt.Scanln(&dir_path)
+	if err != nil {
+		return
+	}
 	var asm_file_name = "Lab0-Eng.asm"
 	asm_path = dir_path + asm_file_name
 
@@ -130,7 +179,12 @@ func main() {
 		fmt.Println("File opening error", err)
 		return
 	}
-	defer write_file.Close()
+	defer func(write_file *os.File) {
+		err := write_file.Close()
+		if err != nil {
+
+		}
+	}(write_file)
 	writer := bufio.NewWriter(write_file)
 
 	files, err := os.ReadDir(dir_path)
@@ -147,7 +201,12 @@ func main() {
 				fmt.Println(err)
 				return
 			}
-			defer curFile.Close()
+			defer func(curFile *os.File) {
+				err := curFile.Close()
+				if err != nil {
+
+				}
+			}(curFile)
 			reader := bufio.NewReader(curFile)
 			counter = 1
 
@@ -186,8 +245,14 @@ func main() {
 							handlePop(words[1], s)
 						}
 					default:
-						writer.Write([]byte("unknown\n"))
-						writer.Flush()
+						_, err := writer.Write([]byte("unknown\n"))
+						if err != nil {
+							return
+						}
+						err = writer.Flush()
+						if err != nil {
+							return
+						}
 					}
 				}
 			}
