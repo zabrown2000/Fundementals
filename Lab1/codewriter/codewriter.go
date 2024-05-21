@@ -54,7 +54,8 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store the and-ing of D and value in that spot in that space in the stack -> move SP back
 		// down to next empty spot
-		asm = "//and\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D&M\n@SP\nM=M+1\n"
+		//asm = "//and\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D&M\n@SP\nM=M+1\n"
+		asm = "//and\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nM=D&M\n@SP\nM=M+1\n"
 	case "or":
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store the or-ing of D and value in that spot in that space in the stack -> move SP back
