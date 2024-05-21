@@ -8,18 +8,20 @@ import (
 )
 
 type CodeWriter struct {
-	writer    *bufio.Writer
-	file_name string
+	writer        *bufio.Writer
+	file_name     string
+	logic_counter int
 }
 
 // New creates a new CodeWriter instance for a given file path
 func New(asm_path string) *CodeWriter {
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	logic_counter := 0
 	if err != nil {
 		fmt.Println("File opening error", err)
 		return nil
 	}
-	return &CodeWriter{bufio.NewWriter(write_file), ""}
+	return &CodeWriter{bufio.NewWriter(write_file), "", logic_counter}
 }
 
 // SetFileName sets the file name for the current vm file for dealing with static segment
@@ -68,19 +70,22 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		//decrease the SP and subtract the value in D from the contents in M and store in D
 		//if D = 0 jump to label IS-EQ, load the SP and set contents of stack at SP to -1 (true)
 		// else load SP and set content of stack to 0 (false) -> move SP back down to next empty spot
-		asm = "//equal\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_EQ_LABEL\nD;JEQ\n//Not_Equal\n@SP\nA=M\nM=0\n@END_EQ_LABEL\n0;JMP\n(IS_EQ_LABEL)\n@SP\nA=M\nM=-1\n(END_EQ_LABEL)\n@SP\nM=M+1\n"
+		asm = "//equal\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_EQ_LABEL" + strconv.Itoa(cw.logic_counter) + "\nD;JEQ\n//Not_Equal\n@SP\nA=M\nM=0\n@END_EQ_LABEL" + strconv.Itoa(cw.logic_counter) + "\n0;JMP\n(IS_EQ_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nA=M\nM=-1\n(END_EQ_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nM=M+1\n"
+		cw.logic_counter++
 	case "gt":
 		// move SP to top of stack and store value in D
 		//decrease the SP and subtract the value in D from the contents in M and store in D
 		//if D > 0 jump to label IS-GT, load the SP and set contents of stack at SP to -1 (true)
 		// else load SP and set content of stack to 0 (false) -> move SP back down to next empty spot
-		asm = "//gt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_GT_LABEL\nD;JGT\n//Not_GT\n@SP\nA=M\nM=0\n@END_GT_LABEL\n0;JMP\n(IS_GT_LABEL)\n@SP\nA=M\nM=-1\n(END_GT_LABEL)\n@SP\nM=M+1\n"
+		asm = "//gt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_GT_LABEL" + strconv.Itoa(cw.logic_counter) + "\nD;JGT\n//Not_GT\n@SP\nA=M\nM=0\n@END_GT_LABEL" + strconv.Itoa(cw.logic_counter) + "\n0;JMP\n(IS_GT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nA=M\nM=-1\n(END_GT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nM=M+1\n"
+		cw.logic_counter++
 	case "lt":
 		// move SP to top of stack and store value in D
 		//decrease the SP and subtract the value in D from the contents in M and store in D
 		//if D < 0 jump to label IS-LT, load the SP and set contents of stack at SP to -1 (true)
 		// else load SP and set content of stack to 0 (false) -> move SP back down to next empty spot
-		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL\nD;JLT\n//Not_LT\n@SP\nA=M\nM=0\n@END_LT_LABEL\n0;JMP\n(IS_LT_LABEL)\n@SP\nA=M\nM=-1\n(END_LT_LABEL)\n@SP\nM=M+1\n"
+		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\nD;JLT\n//Not_LT\n@SP\nA=M\nM=0\n@END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\n0;JMP\n(IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nA=M\nM=-1\n(END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nM=M+1\n"
+		cw.logic_counter++
 	}
 
 	_, err := cw.writer.Write([]byte(asm))
