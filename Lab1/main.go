@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-//TO DO: clean up main to sync with 2 new modules
-
 var CurVM string
 var asm_path string
 var dir_name string
@@ -32,21 +30,14 @@ func main() {
 	// create codewriter obj and send file to open to write
 	cw := codewriter.New(asm_path)
 
-	//writer := bufio.NewWriter(write_file) - get from codewriter
-
 	files, err := os.ReadDir(dir_path)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	// create loop for dir
 
-	// if arithmetic get cmd type from arg1, and call writearithmetic
-	// if push or pop call the push/pop func and send arg1 and arg2
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".vm" {
-			// call setfilename and send file name without vm - basically dir_name
-			// fileNameWithoutExt := strings.TrimSuffix(filePath, ".vm")
 			CurVM = file.Name()
 			cw.SetFileName(strings.TrimSuffix(CurVM, ".vm"))
 			// each vm file, create parser obj and send file to open to read
@@ -60,19 +51,13 @@ func main() {
 				cmdType := psr.CommandType()
 				switch cmdType {
 				case parser.C_ARITHMETIC:
-					//get arg1 and send in below func
-					fmt.Println("C_ARITHMETIC")
 					arg1 := psr.Arg1()
 					cw.WriteArithmetic(arg1)
 				case parser.C_PUSH:
-					//get arg1 and arg2 and send
-					fmt.Println("C_PUSH")
 					arg1 := psr.Arg1()
 					arg2 := psr.Arg2()
 					cw.WritePushPop("push", arg1, arg2)
 				case parser.C_POP:
-					//get arg1 and arg2 and send
-					fmt.Println("C_POP")
 					arg1 := psr.Arg1()
 					arg2 := psr.Arg2()
 					cw.WritePushPop("pop", arg1, arg2)

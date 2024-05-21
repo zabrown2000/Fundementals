@@ -9,16 +9,10 @@ import (
 	"strings"
 )
 
-// Tali: ctor, hasMoreCommands, advance, commandType, ar1, arg2
-// Question - test files have lines that are started with '//' how to ignore them?
-
 type CommandType int
 
-//constructor
-
 type Parser struct {
-	file *os.File
-	//scanner     *bufio.Scanner
+	file        *os.File
 	currentLine string
 	reader      *bufio.Reader
 }
@@ -30,8 +24,6 @@ func New(path string) (*Parser, error) {
 		return nil, err
 	}
 	reader := bufio.NewReader(f)
-	//scanner := bufio.NewScanner(reader)
-	//p := &Parser{file: f, scanner: scanner, reader: reader}
 	p := &Parser{file: f, reader: reader}
 	p.Advance() // Advance to the first line
 	return p, nil
@@ -46,7 +38,6 @@ func (p *Parser) Advance() {
 func (p *Parser) HasMoreLines() bool {
 	_, err := p.reader.Peek(1) // Peek to check for more lines without advancing
 	return err == nil
-	//	return p.scanner.Scan()
 }
 
 // parseNextLine parses the next line of text, removing comments, whitespace, and empty lines
@@ -113,7 +104,7 @@ func (p *Parser) CommandType() CommandType {
 	}
 }
 
-// arg1 returns the first word of currentLine if it is of type arithmetic, otherwise it returns the second word.
+// Arg1 returns the first word of currentLine if it is of type arithmetic, otherwise it returns the second word.
 func (p *Parser) Arg1() string {
 	line := p.currentLine
 	// Split the line into tokens based on whitespace characters
@@ -129,7 +120,7 @@ func (p *Parser) Arg1() string {
 	return "" // Empty string if there is no second word
 }
 
-// arg2 returns the third word of currentLine if it exists, otherwise it returns an empty string.
+// Arg2 returns the third word of currentLine if it exists, otherwise it returns an empty string.
 func (p *Parser) Arg2() int {
 	line := p.currentLine
 	// Split the line into tokens based on whitespace characters

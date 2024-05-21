@@ -153,7 +153,6 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 			asm = "@" + cw.file_name + "." + index_str + "\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
 		}
 	} else if command == "pop" {
-		//insert pop stuff here
 		_, err := cw.writer.Write([]byte("//pop " + segment + " " + index_str + "\n"))
 		if err != nil {
 			return
