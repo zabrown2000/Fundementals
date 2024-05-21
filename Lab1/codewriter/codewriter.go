@@ -37,35 +37,29 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store sum of D and value in that spot in that space in the stack -> move SP back down
 		// to next empty spot
-		//asm = "//add\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D+M\n@SP\nM=M+1\n"
 		asm = "//add\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nM=D+M\n@SP\nM=M+1\n"
 	case "sub":
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store difference of value in that spot and D in that space in the stack -> move SP back
 		// down to next empty spot
-		//asm = "//sub\n@SP\nAM=M-1\nD=M\nA=A-1\nM=M-D\n@SP\nM=M+1\n"
 		asm = "//sub\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nM=M-D\n@SP\nM=M+1\n"
 	case "neg":
 		// move stack pointer to top of stack -> negate the value in that spot and store
 		// it back in that same spot -> move SP back down to next empty spot
-		//asm = "//neg\n@SP\nA=M-1\nM=-M\n@SP\nM=M+1\n"
 		asm = "//neg\n@SP\nAM=M-1\nM=-M\n@SP\nM=M+1\n"
 	case "and":
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store the and-ing of D and value in that spot in that space in the stack -> move SP back
 		// down to next empty spot
-		//asm = "//and\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D&M\n@SP\nM=M+1\n"
 		asm = "//and\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nM=D&M\n@SP\nM=M+1\n"
 	case "or":
 		// move stack pointer to top of stack -> store value in D -> move up to the next element
 		// -> store the or-ing of D and value in that spot in that space in the stack -> move SP back
 		// down to next empty spot
-		//asm = "//or\n@SP\nAM=M-1\nD=M\nA=A-1\nM=D|M\n@SP\nM=M+1\n"
 		asm = "//or\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nM=D|M\n@SP\nM=M+1\n"
 	case "not":
 		// move stack pointer to top of stack -> note the value in that spot and store
 		// it back in that same spot -> move SP back down to next empty spot
-		//asm = "//not\n@SP\nA=M-1\nM=!M\n@SP\nM=M+1\n"
 		asm = "//not\n@SP\nAM=M-1\nM=!M\n@SP\nM=M+1\n"
 	case "eq":
 		// move SP to top of stack and store value in D
@@ -170,7 +164,7 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 		}
 		switch segment {
 		case "constant":
-			// Load SP and decrese to access top value, and store it in D
+			// Load SP and decrease to access top value, and store it in D
 			asm = "@SP\nM=M-1\nD=M\n"
 		case "local":
 			// get address of local segment and store segment in D -> calculate internal address in local segment

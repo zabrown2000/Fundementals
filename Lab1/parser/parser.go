@@ -37,7 +37,7 @@ func New(path string) (*Parser, error) {
 	return p, nil
 }
 
-// advance moves to the next line and updates currentLine and hasMore
+// Advance moves to the next line and updates currentLine and hasMore
 func (p *Parser) Advance() {
 	p.parseNextLine()
 }
@@ -51,7 +51,6 @@ func (p *Parser) HasMoreLines() bool {
 
 // parseNextLine parses the next line of text, removing comments, whitespace, and empty lines
 func (p *Parser) parseNextLine() {
-	fmt.Println("before read line")
 	line, err := p.reader.ReadString('\n')
 	if err != nil {
 		if err == io.EOF {
@@ -60,22 +59,9 @@ func (p *Parser) parseNextLine() {
 		}
 		panic(fmt.Sprintf("err - couldn't get a line! %v", err))
 	}
-	fmt.Println("after read line")
-	fmt.Println(line)
 	p.currentLine = line
-	fmt.Println("updated current line")
-	fmt.Println(p.currentLine)
 	return // Exit the function after updating currentLine
 }
-
-/*
-// Parse returns the current line text content, excluding white spaces and comments
-func (p *Parser) Parse() string {
-	line := p.currentLine
-	p.advance() // Move to the next line
-	return line
-}
-*/
 
 // Close closes the file being parsed
 func (p *Parser) Close() error {
