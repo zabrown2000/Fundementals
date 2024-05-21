@@ -163,18 +163,39 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 		}
 		switch segment {
 		case "constant":
+			// Load SP and decrese to access top value, and store it in D
 			asm = "@SP\nM=M-1\nD=M\n"
 		case "local":
+			// get address of local segment and store segment in D -> calculate internal address in local segment
+			// by adding index offset -> store address in General Register 13
+			//Load SP and decrement to access top value and store in D
+			//Load address of R13 and access it contents (local address with offset)
+			//store contents in D (top value from stack) in to that address
 			asm = "@LCL\nD=M\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
 		case "argument":
+			// get address of argument segment and store segment in D -> calculate internal address in argument segment
+			// by adding index offset -> store address in General Register 13
+			//Load SP and decrement to access top value and store in D
+			//Load address of R13 and access it contents (argument address with offset)
+			//store contents in D (top value from stack) in to that address
 			asm = "@ARG\nD=M\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
 		case "this":
+			// get address of 'this' segment and store segment in D -> calculate internal address in 'this' segment
+			// by adding index offset -> store address in General Register 13
+			//Load SP and decrement to access top value and store in D
+			//Load address of R13 and access it contents ('this' address with offset)
+			//store contents in D (top value from stack) in to that address
 			asm = "@THIS\nD=M\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
 		case "that":
+			// get address of 'that' segment and store segment in D -> calculate internal address in 'that' segment
+			// by adding index offset -> store address in General Register 13
+			//Load SP and decrement to access top value and store in D
+			//Load address of R13 and access it contents ('that' address with offset)
+			//store contents in D (top value from stack) in to that address
 			asm = "@THAT\nD=M\n@" + index_str + "\nD=D+A\n@R13\nM=D\n@SP\nAM=M-1\nD=M\n@R13\nA=M\nM=D\n"
 		case "pointer":
-			// based on index decide if taking this or that segment address -> store the segment in D
-			// -> place segment in next open spot in stack -> move SP down 1 to next open spot
+			// based on index decide if storing this or that segment address -> reduce the SP to top value in stack
+			//load that value to D and load THIS/THAT address to and store contents of D there
 			if index == 0 {
 				asm = "@SP\nAM=M-1\nD=M\n@THIS\nM=D\n"
 			} else if index == 1 {
