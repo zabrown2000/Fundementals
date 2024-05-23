@@ -1,8 +1,8 @@
 package main
 
 import (
-	"Fundementals/Lab1/codewriter"
-	"Fundementals/Lab1/parser"
+	"Fundementals/VMTranslator/codewriter"
+	"Fundementals/VMTranslator/parser"
 	"fmt"
 	"os"
 	"path"
