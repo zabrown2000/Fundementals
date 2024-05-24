@@ -29,6 +29,7 @@ func main() {
 
 	// create codewriter obj and send file to open to write
 	cw := codewriter.New(asm_path)
+	// TO DO: Zahava - call bootstrap code
 
 	files, err := os.ReadDir(dir_path)
 	if err != nil {
@@ -49,6 +50,7 @@ func main() {
 			for {
 				// for each file call parser to read the line and return type of command and args
 				cmdType := psr.CommandType()
+				// TO DO: Tali & Zahava - add cases for commands added
 				switch cmdType {
 				case parser.C_ARITHMETIC:
 					arg1 := psr.Arg1()

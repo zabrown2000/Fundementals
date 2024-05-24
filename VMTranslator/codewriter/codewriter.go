@@ -29,6 +29,12 @@ func (cw *CodeWriter) SetFileName(name string) {
 	cw.file_name = name
 }
 
+// ADD COMMENT
+func (cw *CodeWriter) WriteInit() {
+	// TO DO: Zahava - write the bootstrap code and write it to file
+	//               - call it from main before parse vm files
+}
+
 // WriteArithmetic writes the assembly code for the given VM arithmetic command
 func (cw *CodeWriter) WriteArithmetic(cmd string) {
 	var asm string
@@ -223,4 +229,34 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 	if err != nil {
 		return
 	}
+}
+
+func (cw *CodeWriter) WriteLabel(label string) {
+	// TO DO: Zahava - add asm code and write it
+	//               - update code in main to handle this
+}
+
+func (cw *CodeWriter) WriteGoto(label string) {
+	// TO DO: Zahava - add asm code and write it
+	//               - update code in main to handle this
+}
+
+func (cw *CodeWriter) WriteIfGoto(label string) {
+	// TO DO: Tali - add asm code and write it
+	//               - update code in main to handle this
+}
+
+func (cw *CodeWriter) WriteFunction(function_name string, nVars int) {
+	// TO DO: Tali - add asm code and write it
+	//               - update code in main to handle this
+}
+
+func (cw *CodeWriter) WriteReturn(function_name string, nVars int) {
+	// TO DO: Tali - add asm code and write it
+	//               - update code in main to handle this
+}
+
+func (cw *CodeWriter) WriteCall(function_name string, nArgs int) {
+	// TO DO: Zahava - add asm code and write it
+	//               - update code in main to handle this
 }
