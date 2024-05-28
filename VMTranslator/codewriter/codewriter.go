@@ -29,10 +29,39 @@ func (cw *CodeWriter) SetFileName(name string) {
 	cw.file_name = name
 }
 
-// ADD COMMENT
+// WriteInit writes the bootstrap code at the top of the asm file
 func (cw *CodeWriter) WriteInit() {
-	// TO DO: Zahava - write the bootstrap code and write it to file
-	//               - call it from main before parse vm files
+	//func (cw *CodeWriter) WriteInit(callSysInit bool) {
+	//	cw.WriteLine("@256\nD=A\n@SP\nM=D\n")
+	//	// if sys.vm provided call Sys.init 0
+	//	if callSysInit {
+	//		cw.WriteComment("call Sys.init 0")
+	//		cw.WriteCall("Sys.init", 0)
+	//		cw.WriteLine("0;JMP\n")
+	//	}
+	//}
+
+	// Need to save all segments when call sysinit
+	// Set stack pointer to 256
+	var asm = "//set stack pointer\n@256\nD=A\n@0\nM=D\n"
+	// call writeCall, it will save segments for me
+	//@Sys.init$ret.0\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n - push return address
+	//@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n
+	//@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n
+	//@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n
+	//@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n
+	//@SP\nD=M\n@5\nD=D-A\n@ARG\nM=D\n - reposition ARG
+	//@SP\nD=M\n@LCL\nM=D\n - reposition LCL
+	asm += "@Sys.init\n0;JMP\n(Sys.init$ret.0)\n" //go to sysinit
+
+	_, err := cw.writer.Write([]byte(asm))
+	if err != nil {
+		return
+	}
+	err = cw.writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 // WriteArithmetic writes the assembly code for the given VM arithmetic command
@@ -231,14 +260,32 @@ func (cw *CodeWriter) WritePushPop(command string, segment string, index int) {
 	}
 }
 
+// WriteLabel writes the assembly code for the labelprovided
 func (cw *CodeWriter) WriteLabel(label string) {
-	// TO DO: Zahava - add asm code and write it
-	//               - update code in main to handle this
+	var asm = "//label\n(" + label + ")\n"
+
+	_, err := cw.writer.Write([]byte(asm))
+	if err != nil {
+		return
+	}
+	err = cw.writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
+// WriteGoto writes the assembly code for an unconditional jump
 func (cw *CodeWriter) WriteGoto(label string) {
-	// TO DO: Zahava - add asm code and write it
-	//               - update code in main to handle this
+	var asm = "//goto\n@" + label + "\n0;JMP\n"
+
+	_, err := cw.writer.Write([]byte(asm))
+	if err != nil {
+		return
+	}
+	err = cw.writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 func (cw *CodeWriter) WriteIfGoto(label string) {
@@ -259,4 +306,37 @@ func (cw *CodeWriter) WriteReturn(function_name string, nVars int) {
 func (cw *CodeWriter) WriteCall(function_name string, nArgs int) {
 	// TO DO: Zahava - add asm code and write it
 	//               - update code in main to handle this
+
+	// create label for return address - filename.funcname$ret.ctr (put $ret for return addresses)
+	// push the return address with the label
+	// save LCL, ARG, THIS, THAT segments
+	// reposition ARG
+	// reposition LCL
+	// place label of function going to and jump to it
+
+	//func (cw *CodeWriter) WriteCall(funcName string, nArgs int) {
+	//	count := cw.nextCount()
+	//	cw.WriteLine("@SP\nD=M\n@R13\nM=D\n" +
+	//		"@ret." + count + "\nD=A\n@SP\nA=M\nM=D\n" +
+	//		tplIncrementSP() +
+	//		tplPointer("LCL") +
+	//		tplIncrementSP() +
+	//		tplPointer("ARG") +
+	//		tplIncrementSP() +
+	//		tplPointer("THIS") +
+	//		tplIncrementSP() +
+	//		tplPointer("THAT") +
+	//		tplIncrementSP() +
+	//		"@R13\nD=M\n@" + strconv.Itoa(nArgs) + "\nD=D-A\n@ARG\nM=D\n" +
+	//		"@SP\nD=M\n@LCL\nM=D\n@" + funcName + "\n" +
+	//		"0;JMP\n(ret." + count + ")\n")
+	//}
+	//
+	//func tplIncrementSP() string {
+	//	return "@SP\nM=M+1\n"
+	//}
+	//
+	//func tplPointer(i string) string {
+	//	return "@" + i + "\nD=M\n@SP\nA=M\nM=D\n"
+	//}
 }

@@ -29,7 +29,8 @@ func main() {
 
 	// create codewriter obj and send file to open to write
 	cw := codewriter.New(asm_path)
-	// TO DO: Zahava - call bootstrap code
+	// Calling bootstrap code writer
+	cw.WriteInit()
 
 	files, err := os.ReadDir(dir_path)
 	if err != nil {
@@ -63,6 +64,12 @@ func main() {
 					arg1 := psr.Arg1()
 					arg2 := psr.Arg2()
 					cw.WritePushPop("pop", arg1, arg2)
+				case parser.C_LABEL:
+					arg1 := psr.Arg1()
+					cw.WriteLabel(arg1)
+				case parser.C_GOTO:
+					arg1 := psr.Arg1()
+					cw.WriteGoto(arg1)
 				case -1: //not a valid commandtype returned
 					if psr.HasMoreLines() { //but still more lines
 						psr.Advance()
