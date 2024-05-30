@@ -43,6 +43,7 @@ func main() {
 			CurVM = file.Name()
 			cw.SetFileName(strings.TrimSuffix(CurVM, ".vm"))
 			// each vm file, create parser obj and send file to open to read
+			// TO DO: reset vm ctr to 0
 			psr, err := parser.New(dir_path + CurVM)
 			if err != nil {
 				fmt.Println(err)

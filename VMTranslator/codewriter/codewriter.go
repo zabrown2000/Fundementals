@@ -8,20 +8,28 @@ import (
 )
 
 type CodeWriter struct {
-	writer        *bufio.Writer
-	file_name     string
-	logic_counter int
+	writer              *bufio.Writer
+	file_name           string
+	logic_counter       int
+	vm_function_counter int
+	// convention: filemame.funcname.counter
+	// vm file already has filename.funcname
+	// when need ctr after label?
+	// to allow mult calls to same func in code, when write call in asm
+	// first have to store return label and return takes that address to go back to
+	// label to go and come back need to be the same
 }
 
 // New creates a new CodeWriter instance for a given file path
 func New(asm_path string) *CodeWriter {
 	write_file, err := os.OpenFile(asm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	logic_counter := 0
+	vm_function_counter := 0
 	if err != nil {
 		fmt.Println("File opening error", err)
 		return nil
 	}
-	return &CodeWriter{bufio.NewWriter(write_file), "", logic_counter}
+	return &CodeWriter{bufio.NewWriter(write_file), "", logic_counter, vm_function_counter}
 }
 
 // SetFileName sets the file name for the current vm file for dealing with static segment
