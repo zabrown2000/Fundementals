@@ -42,8 +42,8 @@ func main() {
 		if path.Ext(file.Name()) == ".vm" {
 			CurVM = file.Name()
 			cw.SetFileName(strings.TrimSuffix(CurVM, ".vm"))
+			cw.ResetFuncCounter()
 			// each vm file, create parser obj and send file to open to read
-			// TO DO: reset vm ctr to 0
 			psr, err := parser.New(dir_path + CurVM)
 			if err != nil {
 				fmt.Println(err)
@@ -71,6 +71,10 @@ func main() {
 				case parser.C_GOTO:
 					arg1 := psr.Arg1()
 					cw.WriteGoto(arg1)
+				case parser.C_CALL:
+					arg1 := psr.Arg1()
+					arg2 := psr.Arg2()
+					cw.WriteCall(arg1, arg2)
 				case -1: //not a valid commandtype returned
 					if psr.HasMoreLines() { //but still more lines
 						psr.Advance()
