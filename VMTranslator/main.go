@@ -78,6 +78,10 @@ func main() {
 					arg1 := psr.Arg1()
 					arg2 := psr.Arg2()
 					cw.WriteCall(arg1, arg2)
+				case parser.C_FUNCTION:
+					arg1 := psr.Arg1()
+					arg2 := psr.Arg2()
+					cw.WriteCall(arg1, arg2)
 				case -1: //not a valid commandtype returned
 					if psr.HasMoreLines() { //but still more lines
 						psr.Advance()

@@ -323,7 +323,24 @@ func (cw *CodeWriter) WriteIfGoto(label string) {
 func (cw *CodeWriter) WriteFunction(function_name string, nVars int) {
 	// TO DO: Tali - add asm code and write it
 	//               - update code in main to handle this
+	//function SimpleFunction.test 2
+	//type segment (name of func) number of local arguments
+	//need to do for func: arg already set up with vals, local initiated and zeroed?
+	//can't be as caller doesn't know the number of local params,
+	asm := "(" + function_name + ")\n@SP\nA=M\n"
+	for i := 0; i < nVars; i++ {
+		asm += "M=0\nA=A+1\n"
+	}
+	asm += "D=A\n@SP\nM=D\n"
 
+	_, err := cw.writer.Write([]byte(asm))
+	if err != nil {
+		return
+	}
+	err = cw.writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 func (cw *CodeWriter) WriteReturn(function_name string) {
