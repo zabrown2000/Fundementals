@@ -371,7 +371,7 @@ func (cw *CodeWriter) WriteReturn() {
 		return
 	}
 	//but after return we probably need to increase the function counter?
-	cw.vm_function_counter++
+	//cw.vm_function_counter++ //only needs to be increased fom caller
 }
 
 // WriteCall writes the assembly code for calling a function
