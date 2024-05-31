@@ -58,12 +58,12 @@ func (cw *CodeWriter) WriteInit() {
 	//cw.WriteCall("Sys.init", 0)
 
 	// push return address
-	asm += "@Sys.init$ret.0\nD=A\n@SP\nAM=M+1\n"
+	asm += "@Sys.init$ret.0\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
 	// save segments
-	asm += "@LCL\nD=M\n@SP\nAM=M+1\n"
-	asm += "@ARG\nD=M\n@SP\nAM=M+1\n"
-	asm += "@THIS\nD=M\n@SP\nAM=M+1\n"
-	asm += "@THAT\nD=M\n@SP\nAM=M+1\n"
+	asm += "@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+	asm += "@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+	asm += "@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+	asm += "@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
 	// reposition segments, LCL=SP, ARG=SP-5-n
 	asm += "@SP\nD=M\n@5\nD=D-A\n@ARG\nM=D\n"
 	asm += "@SP\nD=M\n@LCL\nM=D\n"
@@ -371,7 +371,7 @@ func (cw *CodeWriter) WriteReturn() {
 		return
 	}
 	//but after return we probably need to increase the function counter?
-	//cw.vm_function_counter++ //only needs to be increased fom caller
+	cw.vm_function_counter++
 }
 
 // WriteCall writes the assembly code for calling a function
