@@ -343,7 +343,7 @@ func (cw *CodeWriter) WriteFunction(function_name string, nVars int) {
 	}
 }
 
-func (cw *CodeWriter) WriteReturn(function_name string) {
+func (cw *CodeWriter) WriteReturn() {
 	// TO DO: Tali - add asm code and write it
 	//               - update code in main to handle this
 	asm := "//return\n@LCL\nD=M\n@R13\nM=D\n" //store local in R13 (FRAME)
@@ -361,7 +361,7 @@ func (cw *CodeWriter) WriteReturn(function_name string) {
 	asm += "@R13\nAM=M-1\nD=M\n" + //load FRAME-3, decrease by 1 (also in memory) store in D
 		"@LCL\nM=D\n" // store FRAME-4 from above in LCL - restore caller's lcl
 	asm += "@R14\n0;JMP\n" //load return address and unconditionally jump
-	//not sure that we need function name - the return address is after all in stack -
+	//not sure that we need function name - the return address is after all in stack  - removing for now
 	_, err := cw.writer.Write([]byte(asm))
 	if err != nil {
 		return

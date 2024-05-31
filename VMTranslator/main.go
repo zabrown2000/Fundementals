@@ -83,8 +83,7 @@ func main() {
 					arg2 := psr.Arg2()
 					cw.WriteFunction(arg1, arg2)
 				case parser.C_RETURN:
-					arg1 := psr.Arg1()
-					cw.WriteReturn(arg1)
+					cw.WriteReturn()
 				case -1: //not a valid commandtype returned
 					if psr.HasMoreLines() { //but still more lines
 						psr.Advance()
