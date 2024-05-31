@@ -307,16 +307,29 @@ func (cw *CodeWriter) WriteGoto(label string) {
 func (cw *CodeWriter) WriteIfGoto(label string) {
 	// TO DO: Tali - add asm code and write it
 	//               - update code in main to handle this
+	// pop first element from stack, if it equals 0 jump to label
+	var asm = "//if-goto\n@SP\nAM=M-1\\nD=M\\n@" + label + "\nD;JEQ\n"
+
+	_, err := cw.writer.Write([]byte(asm))
+	if err != nil {
+		return
+	}
+	err = cw.writer.Flush()
+	if err != nil {
+		return
+	}
 }
 
 func (cw *CodeWriter) WriteFunction(function_name string, nVars int) {
 	// TO DO: Tali - add asm code and write it
 	//               - update code in main to handle this
+
 }
 
-func (cw *CodeWriter) WriteReturn(function_name string, nVars int) {
+func (cw *CodeWriter) WriteReturn(function_name string) {
 	// TO DO: Tali - add asm code and write it
 	//               - update code in main to handle this
+
 }
 
 // WriteCall writes the assembly code for calling a function

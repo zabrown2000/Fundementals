@@ -71,6 +71,9 @@ func main() {
 				case parser.C_GOTO:
 					arg1 := psr.Arg1()
 					cw.WriteGoto(arg1)
+				case parser.C_IFGOTO:
+					arg1 := psr.Arg1()
+					cw.WriteGoto(arg1)
 				case parser.C_CALL:
 					arg1 := psr.Arg1()
 					arg2 := psr.Arg2()

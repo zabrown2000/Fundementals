@@ -66,7 +66,7 @@ const (
 	C_POP                           // pop
 	C_LABEL                         // label
 	C_GOTO                          // goto
-	C_IF                            // if
+	C_IFGOTO                        // if-goto
 	C_FUNCTION                      // function
 	C_RETURN                        // return
 	C_CALL                          // call
@@ -92,7 +92,7 @@ func (p *Parser) CommandType() CommandType {
 	case "goto":
 		return C_GOTO
 	case "if-goto":
-		return C_IF
+		return C_IFGOTO
 	case "function":
 		return C_FUNCTION
 	case "return":
