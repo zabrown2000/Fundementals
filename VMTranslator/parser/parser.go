@@ -45,8 +45,14 @@ func (p *Parser) parseNextLine() {
 	line, err := p.reader.ReadString('\n')
 	if err != nil {
 		if err == io.EOF {
+			if len(line) > 0 {
+				// Handle the last line without a newline character
+				p.currentLine = strings.TrimSpace(line)
+				return
+			}
 			p.currentLine = "" // Indicate no more lines
 			return
+
 		}
 		panic(fmt.Sprintf("err - couldn't get a line! %v", err))
 	}

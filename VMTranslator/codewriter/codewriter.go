@@ -43,8 +43,7 @@ func (cw *CodeWriter) ResetFuncCounter() {
 
 // WriteInit writes the bootstrap code at the top of the asm file
 func (cw *CodeWriter) WriteInit(is_sys_included bool) {
-	// Set stack pointer to 256
-	var asm = "//set stack pointer\n@256\nD=A\n@0\nM=D\n"
+
 	//_, err := cw.writer.Write([]byte(asm))
 	//if err != nil {
 	//	return
@@ -59,6 +58,8 @@ func (cw *CodeWriter) WriteInit(is_sys_included bool) {
 
 	// only call sys.init if it is defined
 	if is_sys_included {
+		// Set stack pointer to 256
+		var asm = "//set stack pointer\n@256\nD=A\n@0\nM=D\n"
 		// push return address
 		asm += "@Sys.init$ret.0\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
 		// save segments
@@ -71,16 +72,17 @@ func (cw *CodeWriter) WriteInit(is_sys_included bool) {
 		asm += "@SP\nD=M\n@LCL\nM=D\n"
 		// call sysinit
 		asm += "@Sys.init\n0;JMP\n(Sys.init$ret.0)\n"
+
+		_, err := cw.writer.Write([]byte(asm))
+		if err != nil {
+			return
+		}
+		err = cw.writer.Flush()
+		if err != nil {
+			return
+		}
 	}
 
-	_, err := cw.writer.Write([]byte(asm))
-	if err != nil {
-		return
-	}
-	err = cw.writer.Flush()
-	if err != nil {
-		return
-	}
 }
 
 // WriteArithmetic writes the assembly code for the given VM arithmetic command
@@ -350,12 +352,14 @@ func (cw *CodeWriter) WriteReturn() {
 	// TO DO: Tali - add asm code and write it
 	//               - update code in main to handle this
 	asm := "//return\n@LCL\nD=M\n@R13\nM=D\n" //store local in R13 (FRAME)
-	asm += "@R13\nD=M\n@5\nD=D-A\n"           //D now contains address where return address is stored
-	asm += "@R14\nM=D\n"                      //return address is now stored in R14
-	asm += "@SP\nAM=M-1\nD=M\n" +             //load SP, reduce by 1, store stack value in D
-		"@ARG\nM=D\n" //load ARG address (ARG0) and store value from D there (the return value)
-	asm += "@ARG\nD=M\n@SP\nM=D+1\n" //set stack pointer to be the address of arg + 1 (caller's SP)
-	asm += "@R13\nAM=M-1\nD=M\n" +   //load FRAME, decrease by 1 (also in memory) store in D
+	//asm += "@R13\nD=M\n@5\nD=D-A\n"           //D now contains address where return address is stored
+	asm += "@R13\nD=M\n@5\nA=D-A\nD=M\n"
+	asm += "@R14\nM=D\n"          //return address is now stored in R14
+	asm += "@SP\nAM=M-1\nD=M\n" + //load SP, reduce by 1, store stack value in D
+		"@ARG\nA=M\nM=D\n" //load ARG address (ARG0) and store value from D there (the return value)
+	//asm += "@ARG\nD=M\n@SP\nM=D+1\n" //set stack pointer to be the address of arg + 1 (caller's SP)
+	asm += "@ARG\nD=M+1\n@SP\nM=D\n"
+	asm += "@R13\nAM=M-1\nD=M\n" + //load FRAME, decrease by 1 (also in memory) store in D
 		"@THAT\nM=D\n" // store FRAME -1 from above in THAT - restore caller's that
 	asm += "@R13\nAM=M-1\nD=M\n" + //load FRAME-1, decrease by 1 (also in memory) store in D
 		"@THIS\nM=D\n" // store FRAME-2 from above in THIS - restore caller's this
@@ -363,7 +367,8 @@ func (cw *CodeWriter) WriteReturn() {
 		"@ARG\nM=D\n" // store FRAME-3 from above in ARG - restore caller's arg
 	asm += "@R13\nAM=M-1\nD=M\n" + //load FRAME-3, decrease by 1 (also in memory) store in D
 		"@LCL\nM=D\n" // store FRAME-4 from above in LCL - restore caller's lcl
-	asm += "@R14\n0;JMP\n" //load return address and unconditionally jump
+	//asm += "@R14\n0;JMP\n" //load return address and unconditionally jump
+	asm += "@R14\nA=M\n0;JMP\n"
 	//not sure that we need function name - the return address is after all in stack  - removing for now
 	_, err := cw.writer.Write([]byte(asm))
 	if err != nil {
