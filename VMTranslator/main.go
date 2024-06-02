@@ -29,14 +29,15 @@ func main() {
 
 	// create codewriter obj and send file to open to write
 	cw := codewriter.New(asm_path)
-	// Calling bootstrap code writer
-	cw.WriteInit()
 
 	files, err := os.ReadDir(dir_path)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+
+	// Calling bootstrap code writer
+	cw.WriteInit(isSysFileProvided(files))
 
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".vm" {
@@ -103,4 +104,13 @@ func main() {
 		}
 	}
 	fmt.Println("Output file is ready: " + asm_file_name)
+}
+
+func isSysFileProvided(files []os.DirEntry) bool {
+	for _, file := range files {
+		if file.Name() == "sys.vm" {
+			return true
+		}
+	}
+	return false
 }

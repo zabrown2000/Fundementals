@@ -42,7 +42,7 @@ func (cw *CodeWriter) ResetFuncCounter() {
 }
 
 // WriteInit writes the bootstrap code at the top of the asm file
-func (cw *CodeWriter) WriteInit() {
+func (cw *CodeWriter) WriteInit(is_sys_included bool) {
 	// Set stack pointer to 256
 	var asm = "//set stack pointer\n@256\nD=A\n@0\nM=D\n"
 	//_, err := cw.writer.Write([]byte(asm))
@@ -57,18 +57,21 @@ func (cw *CodeWriter) WriteInit() {
 	// call writeCall, it will save segments for me
 	//cw.WriteCall("Sys.init", 0)
 
-	// push return address
-	asm += "@Sys.init$ret.0\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
-	// save segments
-	asm += "@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
-	asm += "@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
-	asm += "@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
-	asm += "@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
-	// reposition segments, LCL=SP, ARG=SP-5-n
-	asm += "@SP\nD=M\n@5\nD=D-A\n@ARG\nM=D\n"
-	asm += "@SP\nD=M\n@LCL\nM=D\n"
-	// call sysinit
-	asm += "@Sys.init\n0;JMP\n(Sys.init$ret.0)\n"
+	// only call sys.init if it is defined
+	if is_sys_included {
+		// push return address
+		asm += "@Sys.init$ret.0\nD=A\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+		// save segments
+		asm += "@LCL\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+		asm += "@ARG\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+		asm += "@THIS\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+		asm += "@THAT\nD=M\n@SP\nA=M\nM=D\n@SP\nM=M+1\n"
+		// reposition segments, LCL=SP, ARG=SP-5-n
+		asm += "@SP\nD=M\n@5\nD=D-A\n@ARG\nM=D\n"
+		asm += "@SP\nD=M\n@LCL\nM=D\n"
+		// call sysinit
+		asm += "@Sys.init\n0;JMP\n(Sys.init$ret.0)\n"
+	}
 
 	_, err := cw.writer.Write([]byte(asm))
 	if err != nil {
