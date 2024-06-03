@@ -36,8 +36,10 @@ func main() {
 		return
 	}
 
-	// Calling bootstrap code writer
-	cw.WriteInit(isSysFileProvided(files))
+	// Calling bootstrap code writer, only if sys.init is defined
+	if isSysFileProvided(files) {
+		cw.WriteInit()
+	}
 
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".vm" {
