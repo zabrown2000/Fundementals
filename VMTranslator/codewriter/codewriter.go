@@ -12,12 +12,6 @@ type CodeWriter struct {
 	file_name           string
 	logic_counter       int
 	vm_function_counter int
-	// convention: filemame.funcname.counter
-	// vm file already has filename.funcname
-	// when need ctr after label?
-	// to allow mult calls to same func in code, when write call in asm
-	// first have to store return label and return takes that address to go back to
-	// label to go and come back need to be the same
 }
 
 // New creates a new CodeWriter instance for a given file path
@@ -110,7 +104,7 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		//decrease the SP and subtract the value in D from the contents in M and store in D
 		//if D < 0 jump to label IS-LT, load the SP and set contents of stack at SP to -1 (true)
 		// else load SP and set content of stack to 0 (false) -> move SP back down to next empty spot
-		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\nD;JLT\n//Not_LT\n@SP\nA=M\nM=0\n@END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\n0;JMP\n(IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nA=M\nM=-1\n(END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "M=M+1\n"
+		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\nD;JLT\n//Not_LT\n@SP\nA=M\nM=0\n@END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\n0;JMP\n(IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nA=M\nM=-1\n(END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\nM=M+1\n"
 		cw.logic_counter++
 	}
 
