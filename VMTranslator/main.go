@@ -110,7 +110,7 @@ func main() {
 
 func isSysFileProvided(files []os.DirEntry) bool {
 	for _, file := range files {
-		if file.Name() == "sys.vm" {
+		if file.Name() == "Sys.vm" {
 			return true
 		}
 	}

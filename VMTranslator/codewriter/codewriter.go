@@ -45,7 +45,7 @@ func (cw *CodeWriter) ResetFuncCounter() {
 func (cw *CodeWriter) WriteInit() {
 
 	// Set stack pointer to 256
-	var asm = "//set stack pointer\n@256\nD=A\n@0\nM=D\n"
+	var asm = "(bootstrap)\n//set stack pointer\n@256\nD=A\n@0\nM=D\n"
 	// call sysinit
 	asm += "@Sys.init\n0;JMP\n"
 
@@ -110,7 +110,7 @@ func (cw *CodeWriter) WriteArithmetic(cmd string) {
 		//decrease the SP and subtract the value in D from the contents in M and store in D
 		//if D < 0 jump to label IS-LT, load the SP and set contents of stack at SP to -1 (true)
 		// else load SP and set content of stack to 0 (false) -> move SP back down to next empty spot
-		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\nD;JLT\n//Not_LT\n@SP\nA=M\nM=0\n@END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\n0;JMP\n(IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nA=M\nM=-1\n(END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nM=M+1\n"
+		asm = "//lt\n@SP\nAM=M-1\nD=M\n@SP\nAM=M-1\nD=M-D\n@IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\nD;JLT\n//Not_LT\n@SP\nA=M\nM=0\n@END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "\n0;JMP\n(IS_LT_LABEL" + strconv.Itoa(cw.logic_counter) + ")\n@SP\nA=M\nM=-1\n(END_LT_LABEL" + strconv.Itoa(cw.logic_counter) + "M=M+1\n"
 		cw.logic_counter++
 	}
 
