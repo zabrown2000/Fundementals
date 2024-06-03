@@ -287,7 +287,7 @@ func (cw *CodeWriter) WriteIfGoto(label string) {
 	// TO DO: Tali - add asm code and write it
 	//               - update code in main to handle this
 	// pop first element from stack, if it equals 0 jump to label
-	var asm = "//if-goto\n@SP\nAM=M-1\\nD=M\\n@" + label + "\nD;JEQ\n"
+	var asm = "//if-goto\n@SP\nAM=M-1\nD=M\n@" + label + "\nD;JEQ\n"
 
 	_, err := cw.writer.Write([]byte(asm))
 	if err != nil {
