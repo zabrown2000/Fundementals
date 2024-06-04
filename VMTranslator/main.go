@@ -1,3 +1,6 @@
+//Zahava Brown - 557029367
+//Tali Cohen - 329651871
+
 package main
 
 import (
@@ -45,7 +48,7 @@ func main() {
 		if path.Ext(file.Name()) == ".vm" {
 			CurVM = file.Name()
 			cw.SetFileName(strings.TrimSuffix(CurVM, ".vm"))
-			//cw.ResetFuncCounter()
+
 			// each vm file, create parser obj and send file to open to read
 			psr, err := parser.New(dir_path + CurVM)
 			if err != nil {

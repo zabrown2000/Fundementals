@@ -31,10 +31,6 @@ func (cw *CodeWriter) SetFileName(name string) {
 	cw.file_name = name
 }
 
-func (cw *CodeWriter) ResetFuncCounter() {
-	cw.vm_function_counter = 0
-}
-
 // WriteInit writes the bootstrap code at the top of the asm file
 func (cw *CodeWriter) WriteInit() {
 
