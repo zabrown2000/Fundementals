@@ -39,7 +39,7 @@ func (cw *CodeWriter) ResetFuncCounter() {
 func (cw *CodeWriter) WriteInit() {
 
 	// Set stack pointer to 256
-	var asm = "//set stack pointer\n(bootstrap)\n@256\nD=A\n@0\nM=D\n"
+	var asm = "//set stack pointer\n(bootstrap)\n@261\nD=A\n@0\nM=D\n"
 	// call sysinit
 	asm += "@Sys.init\n0;JMP\n"
 
