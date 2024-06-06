@@ -273,10 +273,8 @@ func (cw *CodeWriter) WriteGoto(label string) {
 	}
 }
 
+// WriteIfGoto writes the assembly code for a conditional jump
 func (cw *CodeWriter) WriteIfGoto(label string) {
-	// TO DO: Tali - add asm code and write it
-	//               - update code in main to handle this
-	// pop first element from stack, if it equals 0 jump to label
 	var asm = "//if-goto\n@SP\nAM=M-1\nD=M\n@" + label + "\nD;JNE\n"
 
 	_, err := cw.writer.Write([]byte(asm))
@@ -289,13 +287,8 @@ func (cw *CodeWriter) WriteIfGoto(label string) {
 	}
 }
 
+// WriteFunction writes the assembly code for a function declaration
 func (cw *CodeWriter) WriteFunction(function_name string, nVars int) {
-	// TO DO: Tali - add asm code and write it
-	//               - update code in main to handle this
-	//function SimpleFunction.test 2
-	//type segment (name of func) number of local arguments
-	//need to do for func: arg already set up with vals, local initiated and zeroed?
-	//can't be as caller doesn't know the number of local params,
 	asm := "//function declaration\n(" + function_name + ")\n"
 	if nVars > 0 {
 		asm += "@SP\nA=M\n"
@@ -315,16 +308,13 @@ func (cw *CodeWriter) WriteFunction(function_name string, nVars int) {
 	}
 }
 
+// WriteReturn writes the assembly code for returning from a function
 func (cw *CodeWriter) WriteReturn() {
-	// TO DO: Tali - add asm code and write it
-	//               - update code in main to handle this
 	asm := "//return\n@LCL\nD=M\n@R13\nM=D\n" //store local in R13 (FRAME)
-	//asm += "@R13\nD=M\n@5\nD=D-A\n"           //D now contains address where return address is stored
 	asm += "@R13\nD=M\n@5\nA=D-A\nD=M\n"
 	asm += "@R14\nM=D\n"          //return address is now stored in R14
 	asm += "@SP\nAM=M-1\nD=M\n" + //load SP, reduce by 1, store stack value in D
 		"@ARG\nA=M\nM=D\n" //load ARG address (ARG0) and store value from D there (the return value)
-	//asm += "@ARG\nD=M\n@SP\nM=D+1\n" //set stack pointer to be the address of arg + 1 (caller's SP)
 	asm += "@ARG\nD=M+1\n@SP\nM=D\n"
 	asm += "@R13\nAM=M-1\nD=M\n" + //load FRAME, decrease by 1 (also in memory) store in D
 		"@THAT\nM=D\n" // store FRAME -1 from above in THAT - restore caller's that
@@ -334,9 +324,7 @@ func (cw *CodeWriter) WriteReturn() {
 		"@ARG\nM=D\n" // store FRAME-3 from above in ARG - restore caller's arg
 	asm += "@R13\nAM=M-1\nD=M\n" + //load FRAME-3, decrease by 1 (also in memory) store in D
 		"@LCL\nM=D\n" // store FRAME-4 from above in LCL - restore caller's lcl
-	//asm += "@R14\n0;JMP\n" //load return address and unconditionally jump
 	asm += "@R14\nA=M\n0;JMP\n"
-	//not sure that we need function name - the return address is after all in stack  - removing for now
 	_, err := cw.writer.Write([]byte(asm))
 	if err != nil {
 		return
@@ -345,8 +333,6 @@ func (cw *CodeWriter) WriteReturn() {
 	if err != nil {
 		return
 	}
-	//but after return we probably need to increase the function counter?
-	//cw.vm_function_counter++ //only needs to be increased fom caller
 }
 
 // WriteCall writes the assembly code for calling a function
