@@ -5,9 +5,12 @@ import (
 )
 
 type CompilationEngine struct {
-	tokenizer *JackTokenizer
+	tokenizer *Tokeniser
 	writer    *bufio.Writer
 }
+
+// throws error if illegal syntax, based on rules/grammar
+// use grammar slides (not lexical elements)
 
 func NewCompilationEngine(inputFile string, outputFile string) *CompilationEngine {
 	// fill in here
