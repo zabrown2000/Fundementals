@@ -5,6 +5,9 @@ import (
 	"os"
 )
 
+// throws if illegal token
+// use lexcial elements section from slides
+
 // Constants for token types
 const (
 	KEYWORD      = 1

@@ -9,6 +9,9 @@ type CompilationEngine struct {
 	writer    *bufio.Writer
 }
 
+// throws error if illegal syntax, based on rules/grammar
+// use grammar slides (not lexical elements)
+
 func NewCompilationEngine(inputFile string, outputFile string) *CompilationEngine {
 	// fill in here
 }
