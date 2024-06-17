@@ -1,11 +1,12 @@
-package JackTranslator
+package compilationEngine
 
 import (
+	"Fundementals/JackTranslator"
 	"bufio"
 )
 
 type CompilationEngine struct {
-	tokenizer *Tokeniser
+	tokenizer *main.Tokeniser
 	writer    *bufio.Writer
 }
 

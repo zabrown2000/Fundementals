@@ -1,4 +1,4 @@
-package JackTranslator
+package tokeniser
 
 import (
 	"bufio"
@@ -123,4 +123,8 @@ func (t *Tokeniser) IntVal() int {
 
 func (t *Tokeniser) StringVal() string {
 	return "" // fill in here
+}
+
+func (t *Tokeniser) TokeniseLine() int {
+	return 0
 }
