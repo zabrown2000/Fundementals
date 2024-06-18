@@ -1,6 +1,7 @@
-package JackTranslator
+package compilationEngine
 
 import (
+	"Fundementals/JackTranslator/tokeniser"
 	"bufio"
 	"fmt"
 	"os"
@@ -13,7 +14,7 @@ import (
 // 2. xml with hierarchy
 
 type CompilationEngine struct {
-	tokenizer      *JackTokenizer
+	tokenizer      *tokeniser.JackTokenizer
 	plainWriter    *bufio.Writer
 	hierarchWriter *bufio.Writer
 	// add current token type
@@ -22,7 +23,7 @@ type CompilationEngine struct {
 // throws error if illegal syntax, based on rules/grammar
 // use grammar slides (not lexical elements)
 
-func NewCompilationEngine(plainOutputFile string, hierarchOutputFile string, tokenizer *JackTokenizer) *CompilationEngine {
+func NewCompilationEngine(plainOutputFile string, hierarchOutputFile string, tokenizer *tokeniser.JackTokenizer) *CompilationEngine {
 	plainFile, err := os.Create(plainOutputFile)
 	if err != nil {
 		return nil

@@ -1,12 +1,19 @@
 package JackTranslator
 
 import (
+	"Fundementals/JackTranslator/tokeniser"
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 // add catch for if parser throws failure on illegal token then print illegal syntax msg
+
+var CurJACK string
+var asm_path string
+var dir_name string
+var asm_file_name string
 
 func main() {
 	// get path from user
@@ -16,12 +23,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	//dir_name = filepath.Base(dir_path)
-	//asm_file_name = dir_name + ".asm"
-	//asm_path = dir_path + asm_file_name
-
-	// create codewriter obj and send file to open to write
-	//cw := codewriter.New(asm_path)
+	dir_name = filepath.Base(dir_path)
 
 	files, err := os.ReadDir(dir_path)
 	if err != nil {
@@ -31,11 +33,15 @@ func main() {
 
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".jack" {
-			// Add actions here
-			// loop through line by line of jack file and get list of tokens
-			// then call compilaiton engine
+			CurJACK = file.Name()
+			// each vm file, create parser obj and send file to open to read
+			tkn, err := tokeniser.New(dir_path + CurJACK)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			tkn.TokeniseLine()
 			fmt.Println("End of input file: " + file.Name())
-			// fmt.Println("Output file is ready: " + asm_file_name)
 		}
 	}
 }
