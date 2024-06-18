@@ -1,4 +1,5 @@
-package JackTranslator
+// add catch for if parser throws failure on illegal token then print illegal syntax msg
+package main
 
 import (
 	"Fundementals/JackTranslator/tokeniser"
@@ -7,8 +8,6 @@ import (
 	"path"
 	"path/filepath"
 )
-
-// add catch for if parser throws failure on illegal token then print illegal syntax msg
 
 var CurJACK string
 var asm_path string
