@@ -14,7 +14,7 @@ import (
 // 2. xml with hierarchy
 
 type CompilationEngine struct {
-	tokenizer      *tokeniser.JackTokenizer
+	tokenizer      *tokeniser.Tokeniser
 	plainWriter    *bufio.Writer
 	hierarchWriter *bufio.Writer
 	// add current token type
@@ -23,7 +23,7 @@ type CompilationEngine struct {
 // throws error if illegal syntax, based on rules/grammar
 // use grammar slides (not lexical elements)
 
-func NewCompilationEngine(plainOutputFile string, hierarchOutputFile string, tokenizer *tokeniser.JackTokenizer) *CompilationEngine {
+func NewCompilationEngine(plainOutputFile string, hierarchOutputFile string, tokenizer *tokeniser.Tokeniser) *CompilationEngine {
 	plainFile, err := os.Create(plainOutputFile)
 	if err != nil {
 		return nil
@@ -391,112 +391,268 @@ func (ce *CompilationEngine) CompileDo() {
 }
 
 func (ce *CompilationEngine) CompileLet() {
-	/*
-		Purpose: Compiles a let statement.
-		Steps:
-		1. Write the opening tag <letStatement>.
-		2. Write the current token let.
-		3. Advance the tokenizer and write the variable name.
-		4. Advance the tokenizer to check for array indexing:
-		      If the current token is an opening bracket [, write the bracket and call compileExpression.
-		      Write the closing bracket ] and advance the tokenizer.
-		5. Write the equals sign =.
-		6. Advance the tokenizer and call compileExpression.
-		7. Write the semicolon ;.
-		8. Write the closing tag </letStatement>.
-	*/
+	//Purpose: Compiles a let statement.
+	//Steps:
+	//1. Write the opening tag <letStatement>.
+	ce.WriteOpenTag(ce.hierarchWriter, "letStatement")
+	//2. Write the current token let.
+	ce.WriteXML(ce.hierarchWriter, "keyword", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "keyword", ce.tokenizer.currentToken)
+	//3. Advance the tokenizer and write the variable name.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.TokenType() != 3 { // not an identifier
+		panic("Unexpected token type! Expected identifier for var name")
+	}
+	ce.WriteXML(ce.hierarchWriter, "identifier", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "identifier", ce.tokenizer.currentToken)
+	//4. Advance the tokenizer to check for array indexing:
+	//      If the current token is an opening bracket [, write the bracket and call compileExpression.
+	//      Write the closing bracket ] and advance the tokenizer.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken == "[" {
+		ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+		ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+		ce.tokenizer.Advance()
+		ce.CompileExpression()
+		ce.tokenizer.Advance()
+		if ce.tokenizer.currentToken == "]" {
+			ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+			ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+			ce.tokenizer.Advance()
+		}
+	}
+	//5. Write the equals sign =.
+	if ce.tokenizer.currentToken != "=" {
+		panic("Unexpected token! Expected =")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//6. Advance the tokenizer and call compileExpression.
+	ce.tokenizer.Advance()
+	ce.CompileExpression()
+	//7. Write the semicolon ;.
+	if ce.tokenizer.currentToken != ";" {
+		panic("Unexpected token! Expected ;")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//8. Write the closing tag </letStatement>.
+	ce.WriteCloseTag(ce.hierarchWriter, "letStatement")
 }
 
 func (ce *CompilationEngine) CompileWhile() {
-	/*
-		Purpose: Compiles a while statement.
-		Steps:
-		1. Write the opening tag <whileStatement>.
-		2. Write the current token while.
-		3. Advance the tokenizer and write the opening parenthesis (.
-		4. Advance the tokenizer and call compileExpression.
-		5. Write the closing parenthesis ).
-		6. Advance the tokenizer and write the opening brace {.
-		7. Advance the tokenizer and call compileStatements.
-		8. Write the closing brace }.
-		9. Write the closing tag </whileStatement>.
-	*/
+	//Purpose: Compiles a while statement.
+	//Steps:
+	//1. Write the opening tag <whileStatement>.
+	ce.WriteOpenTag(ce.hierarchWriter, "whileStatement")
+	//2. Write the current token while.
+	ce.WriteXML(ce.hierarchWriter, "keyword", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "keyword", ce.tokenizer.currentToken)
+	//3. Advance the tokenizer and write the opening parenthesis (.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != "(" {
+		panic("Unexpected token! Expected (")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//4. Advance the tokenizer and call compileExpression.
+	ce.tokenizer.Advance()
+	ce.CompileExpression()
+	//5. Write the closing parenthesis ).
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != ")" {
+		panic("Unexpected token! Expected )")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//6. Advance the tokenizer and write the opening brace {.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != "{" {
+		panic("Unexpected token! Expected {")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//7. Advance the tokenizer and call compileStatements.
+	ce.tokenizer.Advance()
+	ce.CompileStatements()
+	//8. Write the closing brace }.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != "}" {
+		panic("Unexpected token! Expected }")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//9. Write the closing tag </whileStatement>.
+	ce.WriteCloseTag(ce.hierarchWriter, "whileStatement")
 }
 
 func (ce *CompilationEngine) CompileReturn() {
-	/*
-		Purpose: Compiles a return statement.
-		Steps:
-		1. Write the opening tag <returnStatement>.
-		2. Write the current token return.
-		3. Advance the tokenizer to check for an expression:
-		     If the current token is not a semicolon ;, call compileExpression.
-		4. Write the semicolon ;.
-		5. Write the closing tag </returnStatement>.
-	*/
+	//Purpose: Compiles a return statement.
+	//Steps:
+	//1. Write the opening tag <returnStatement>.
+	ce.WriteOpenTag(ce.hierarchWriter, "returnStatement")
+	//2. Write the current token return.
+	ce.WriteXML(ce.hierarchWriter, "keyword", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "keyword", ce.tokenizer.currentToken)
+	//3. Advance the tokenizer to check for an expression:
+	//     If the current token is not a semicolon ;, call compileExpression.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != ";" {
+		ce.CompileExpression()
+	}
+	//4. Write the semicolon ;.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != ";" {
+		panic("Unexpected token! Expected ;")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//5. Write the closing tag </returnStatement>.
+	ce.WriteCloseTag(ce.hierarchWriter, "returnStatement")
 }
 
 func (ce *CompilationEngine) CompileIf() {
-	/*
-		Purpose: Compiles an if statement, possibly with a trailing else clause.
-		Steps:
-		1. Write the opening tag <ifStatement>.
-		2. Write the current token if.
-		3. Advance the tokenizer and write the opening parenthesis (.
-		4. Advance the tokenizer and call compileExpression.
-		5. Write the closing parenthesis ).
-		6. Advance the tokenizer and write the opening brace {.
-		7. Advance the tokenizer and call compileStatements.
-		8. Write the closing brace }.
-		9. Advance the tokenizer to check for an else clause:
-		      If the current token is else, write the keyword else, the opening brace {, call compileStatements, and write the closing brace }.
-		10. Write the closing tag </ifStatement>
-	*/
+	//Purpose: Compiles an if statement, possibly with a trailing else clause.
+	//Steps:
+	//1. Write the opening tag <ifStatement>.
+	ce.WriteOpenTag(ce.hierarchWriter, "ifStatement")
+	//2. Write the current token if.
+	ce.WriteXML(ce.hierarchWriter, "keyword", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "keyword", ce.tokenizer.currentToken)
+	//3. Advance the tokenizer and write the opening parenthesis (.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != "(" {
+		panic("Unexpected token! Expected (")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//4. Advance the tokenizer and call compileExpression.
+	ce.tokenizer.Advance()
+	ce.CompileExpression()
+	//5. Write the closing parenthesis ).
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != ")" {
+		panic("Unexpected token! Expected )")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//6. Advance the tokenizer and write the opening brace {.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != "{" {
+		panic("Unexpected token! Expected {")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//7. Advance the tokenizer and call compileStatements.
+	ce.tokenizer.Advance()
+	ce.CompileStatements()
+	//8. Write the closing brace }.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken != "}" {
+		panic("Unexpected token! Expected }")
+	}
+	ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+	ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	//9. Advance the tokenizer to check for an else clause:
+	//      If the current token is else, write the keyword else, the opening brace {, call compileStatements, and write the closing brace }.
+	ce.tokenizer.Advance()
+	if ce.tokenizer.currentToken == "else" {
+		ce.WriteXML(ce.hierarchWriter, "keyword", ce.tokenizer.currentToken)
+		ce.WriteXML(ce.plainWriter, "keyword", ce.tokenizer.currentToken)
+		ce.tokenizer.Advance()
+		if ce.tokenizer.currentToken != "{" {
+			panic("Unexpected token! Expected {")
+		}
+		ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+		ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+		ce.tokenizer.Advance()
+		ce.CompileStatements()
+		ce.tokenizer.Advance()
+		if ce.tokenizer.currentToken != "}" {
+			panic("Unexpected token! Expected }")
+		}
+		ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+		ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+	}
+	//10. Write the closing tag </ifStatement>
+	ce.WriteCloseTag(ce.hierarchWriter, "ifStatement")
 }
 
 func (ce *CompilationEngine) CompileExpression() {
-	/*
-		Purpose: Compiles an expression.
-		Steps:
-		1. Write the opening tag <expression>.
-		2. Call compileTerm.
-		3. Loop to handle additional terms connected by operators:
-		      If the current token is an operator, write the operator and call compileTerm for the next term.
-		      Otherwise, break the loop.
-		4. Write the closing tag </expression>
-	*/
+	//Purpose: Compiles an expression.
+	//Steps:
+	//1. Write the opening tag <expression>.
+	ce.WriteOpenTag(ce.hierarchWriter, "expression")
+	//2. Call compileTerm. --advance before calling callexpression
+	ce.CompileTerm()
+	//3. Loop to handle additional terms connected by operators:
+	//      If the current token is an operator, write the operator and call compileTerm for the next term.
+	//      Otherwise, break the loop.
+	for {
+		ce.tokenizer.Advance()
+		// NOTE - make this neater
+		if ce.tokenizer.currentToken == "+" || ce.tokenizer.currentToken == "-" || ce.tokenizer.currentToken == "*" || ce.tokenizer.currentToken == "/" || ce.tokenizer.currentToken == "&" || ce.tokenizer.currentToken == "|" || ce.tokenizer.currentToken == "<" || ce.tokenizer.currentToken == ">" || ce.tokenizer.currentToken == "=" {
+			ce.WriteXML(ce.hierarchWriter, "symbol", ce.tokenizer.currentToken)
+			ce.WriteXML(ce.plainWriter, "symbol", ce.tokenizer.currentToken)
+			ce.tokenizer.Advance()
+			ce.CompileTerm()
+		} else {
+			break
+		}
+	}
+	//4. Write the closing tag </expression>
+	ce.WriteCloseTag(ce.hierarchWriter, "expression")
 }
 
 func (ce *CompilationEngine) CompileTerm() {
-	/*
-		Purpose: Compiles a term.
-		Steps:
-		1. Write the opening tag <term>.
-		2. Depending on the current token, handle different types of terms:
-		      If the token is an integer constant, write the integer constant.
-		      If the token is a string constant, write the string constant.
-		      If the token is a keyword constant, write the keyword.
-		      If the token is an identifier, handle variable names, array entries, or subroutine calls.
-		      If the token is an opening parenthesis (, call compileExpression and write the closing parenthesis ).
-		      If the token is a unary operator, write the operator and call compileTerm.
-		3. Write the closing tag </term>.
-	*/
+	//Purpose: Compiles a term.
+	//Steps:
+	//1. Write the opening tag <term>.
+	ce.WriteOpenTag(ce.hierarchWriter, "term")
+	//2. Depending on the current token, handle different types of terms:
+	//      If the token is an integer constant, write the integer constant.
+	//      If the token is a string constant, write the string constant.
+	//      If the token is a keyword constant, write the keyword.
+	//      If the token is an identifier, handle variable names, array entries, or subroutine calls.
+	//      If the token is an opening parenthesis (, call compileExpression and write the closing parenthesis ).
+	//      If the token is a unary operator, write the operator and call compileTerm.
+	if ce.tokenizer.TokenType() == 1 {
+		// keyword
+		ce.WriteXML(ce.hierarchWriter, "keyword", ce.tokenizer.currentToken)
+		ce.WriteXML(ce.plainWriter, "keyword", ce.tokenizer.currentToken)
+	} else if ce.tokenizer.TokenType() == 2 {
+		// identifier
+		// TO DO: handle variable names, array entries, or subroutine calls
+	} else if ce.tokenizer.TokenType() == 3 {
+		// symbol
+		// TO DO: ( or unary op
+	} else if ce.tokenizer.TokenType() == 4 {
+		// int constant
+		ce.WriteXML(ce.hierarchWriter, "int_const", ce.tokenizer.currentToken)
+		ce.WriteXML(ce.plainWriter, "int_const", ce.tokenizer.currentToken)
+	} else if ce.tokenizer.TokenType() == 5 {
+		// string constant
+		ce.WriteXML(ce.hierarchWriter, "string_const", ce.tokenizer.currentToken)
+		ce.WriteXML(ce.plainWriter, "string_const", ce.tokenizer.currentToken)
+	}
+	//3. Write the closing tag </term>.
+	ce.WriteCloseTag(ce.hierarchWriter, "term")
 }
 
 func (ce *CompilationEngine) CompileExpressionList() {
-	/*
-		Purpose: The compileExpressionList function is responsible for compiling a (possibly empty) comma-separated list of expressions. This list is typically found within the argument list of a subroutine call.
-		Steps:
-		1. Write the opening tag <expressionList>.
-		2. Check if the current token indicates the start of an expression. This can be identified by looking for tokens that can start an expression such as integer constants, string constants, keyword constants, variable names, subroutine calls, expressions enclosed in parentheses, and unary operators.
-		3. If there is at least one expression:
-		     Call compileExpression to compile the first expression.
-		     Loop to handle additional expressions separated by commas:
-		          If the current token is a comma ,, write the comma symbol.
-		          Advance the tokenizer.
-		          Call compileExpression to compile the next expression.
-		4. Write the closing tag </expressionList>.
-	*/
+	//Purpose: The compileExpressionList function is responsible for compiling a (possibly empty) comma-separated list of expressions. This list is typically found within the argument list of a subroutine call.
+	//Steps:
+	//1. Write the opening tag <expressionList>.
+	ce.WriteOpenTag(ce.hierarchWriter, "expressionList")
+	//2. Check if the current token indicates the start of an expression. This can be identified by looking for tokens that can start an expression such as integer constants, string constants, keyword constants, variable names, subroutine calls, expressions enclosed in parentheses, and unary operators.
+	//3. If there is at least one expression:
+	//     Call compileExpression to compile the first expression.
+	//     Loop to handle additional expressions separated by commas:
+	//          If the current token is a comma ,, write the comma symbol.
+	//          Advance the tokenizer.
+	//          Call compileExpression to compile the next expression.
+	//4. Write the closing tag </expressionList>.
+	ce.WriteCloseTag(ce.hierarchWriter, "expressionList")
 }
 
 // helper functions
