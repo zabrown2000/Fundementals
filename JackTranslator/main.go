@@ -2,11 +2,13 @@
 package main
 
 import (
+	"Fundementals/JackTranslator/compilationEngine"
 	"Fundementals/JackTranslator/tokeniser"
 	"fmt"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 var CurJACK string
@@ -40,6 +42,23 @@ func main() {
 				return
 			}
 			tkn.TokeniseLine()
+
+			hierarchOutPath := strings.TrimSuffix(CurJACK, ".jack") + "New.xml"
+			plainOutPath := strings.TrimSuffix(CurJACK, ".jack") + "NewT.xml"
+			fileOut, err := os.Create(hierarchOutPath)
+			if err != nil {
+				fmt.Println("Failed to create hierarch output file:", hierarchOutPath
+				return
+			}
+			defer fileOut.Close()
+
+			tokenFileOut, err := os.Create(plainOutPath)
+			if err != nil {
+				fmt.Println("Failed to create plain output file:", plainOutPath)
+				return
+			}
+			defer tokenFileOut.Close()
+			compilationEngine.NewCompilationEngine(plainOutPath, hierarchOutPath, tkn)
 			fmt.Println("End of input file: " + file.Name())
 		}
 	}
