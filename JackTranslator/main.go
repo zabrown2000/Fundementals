@@ -41,13 +41,13 @@ func main() {
 				fmt.Println(err)
 				return
 			}
-			tkn.TokeniseLine()
+			tkn.TokeniseFile()
 
 			hierarchOutPath := strings.TrimSuffix(CurJACK, ".jack") + "New.xml"
 			plainOutPath := strings.TrimSuffix(CurJACK, ".jack") + "NewT.xml"
 			fileOut, err := os.Create(hierarchOutPath)
 			if err != nil {
-				fmt.Println("Failed to create hierarch output file:", hierarchOutPath
+				fmt.Println("Failed to create hierarch output file:", hierarchOutPath)
 				return
 			}
 			defer fileOut.Close()

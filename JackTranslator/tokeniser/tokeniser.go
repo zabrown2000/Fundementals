@@ -45,22 +45,24 @@ func New(path string) (*Tokeniser, error) {
 	}
 	reader := bufio.NewReader(f)
 	t := &Tokeniser{file: f, reader: reader}
-	t.Advance() // Advance to the first line
+	//t.Advance() // Advance to the first line
 	t.init()
 	return t, nil
 }
 
+/*
 // Advance moves to the next line and updates currentLine and hasMore
 func (t *Tokeniser) Advance() {
 	t.parseNextLine()
 }
-
+*/
 // HasMoreLines returns true if there are more lines to be parsed
 func (t *Tokeniser) HasMoreLines() bool {
 	_, err := t.reader.Peek(1) // Peek to check for more lines without advancing
 	return err == nil
 }
 
+/*Original parsenextline
 // parseNextLine parses the next line of text, removing comments, whitespace, and empty lines
 func (t *Tokeniser) parseNextLine() {
 	line, err := t.reader.ReadString('\n')
@@ -79,7 +81,35 @@ func (t *Tokeniser) parseNextLine() {
 	}
 	t.currentLine = line
 	return // Exit the function after updating currentLine
+}*/
+
+// parseNextLine parses the next line of text, removing comments, whitespace, and empty lines
+func (t *Tokeniser) parseNextLine() string {
+	line, err := t.reader.ReadString('\n')
+	if err != nil {
+		if err == io.EOF {
+			if len(line) > 0 {
+				// Handle the last line without a newline character
+				line = strings.TrimSpace(line)
+				if strings.HasPrefix(line, "//") {
+					line = ""
+				}
+				return line
+			}
+			return "" // Indicate no more lines
+
+		}
+		panic(fmt.Sprintf("err - couldn't get a line! %v", err))
+	}
+	line = strings.TrimSpace(line)
+	if strings.HasPrefix(line, "//") {
+		if t.HasMoreLines() {
+			line = t.parseNextLine()
+		}
+	}
+	return line
 }
+
 func (t *Tokeniser) init() {
 	keywords := []string{"class", "constructor", "method", "function", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null",
 		"this", "let", "do", "if", "else", "while", "return"}
@@ -95,27 +125,10 @@ func (t *Tokeniser) init() {
 	}
 }
 
-func (t *Tokeniser) HasMoreTokens() bool {
-	return false // fill in here
-}
-
-func (t *Tokeniser) AdvanceToken() {
-	// fill in here
-}
-
 func (t *Tokeniser) TokenType() int {
 	return 0 // fill in here
 }
 
-/*
-	func (t *Tokeniser) KeyWord() int {
-		return 0 // fill in here
-	}
-
-	func (t *Tokeniser) Symbol() byte {
-		return 0 // fill in here
-	}
-*/
 func (t *Tokeniser) Identifier(s string) bool {
 	if len(s) == 0 {
 		return false
@@ -150,38 +163,47 @@ func (t *Tokeniser) StringVal(s string) bool {
 	return len(s) > 1 && strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"")
 }
 
-func (t *Tokeniser) TokeniseLine() {
-	chars := []rune(t.currentLine)
-	cur_char := ""
-	token_candidate := ""
+func (t *Tokeniser) BlockComment(s string) bool {
+	return len(s) > 3 && strings.HasPrefix(s, "/*") && strings.HasSuffix(s, "*/")
+}
 
-	for i := 0; i <= len(chars); i++ {
-		if i < len(chars) {
-			cur_char += string(chars[i])
+func (t *Tokeniser) TokeniseFile() {
+	for {
+		line := t.parseNextLine() // parser returns line by line
+		if !t.HasMoreLines() {
+			break
 		}
-		if t.keywordsMap[token_candidate] && !t.Identifier(cur_char) {
-			t.Tokens = append(t.Tokens, Token{KEYWORD, token_candidate})
-			token_candidate = ""
-		} else if t.symbolsMap[token_candidate] && (token_candidate != "/" || cur_char != "*") {
-			t.Tokens = append(t.Tokens, Token{SYMBOL, token_candidate})
-			token_candidate = ""
-		} else if t.StringVal(token_candidate) {
-			t.Tokens = append(t.Tokens, Token{STRING_CONST, token_candidate[1 : len(token_candidate)-1]})
-		} else if t.Identifier(token_candidate) && !((cur_char > "a" && cur_char < "z") || (cur_char > "A" && cur_char < "Z") || (cur_char > "0" && cur_char < "9") || cur_char == "_") {
-			t.Tokens = append(t.Tokens, Token{IDENTIFIER, token_candidate})
-			token_candidate = ""
-		} else if t.IntVal(token_candidate) && !(cur_char > "0" && cur_char < "9") {
-			t.Tokens = append(t.Tokens, Token{INT_CONST, token_candidate})
-			token_candidate = ""
-		}
+		chars := []rune(line)
+		cur_char := ""
+		token_candidate := ""
 
-		if cur_char == "0" {
-			// new line chars always skip
-		} else if cur_char == " " && !strings.HasPrefix(token_candidate, "\"") {
-			// is regular space, skip
-		} else {
-			// append new char
-			token_candidate += cur_char
+		for i := 0; i <= len(chars); i++ {
+			if i < len(chars) {
+				cur_char += string(chars[i])
+			}
+			if t.keywordsMap[token_candidate] && !t.Identifier(cur_char) {
+				t.Tokens = append(t.Tokens, Token{KEYWORD, token_candidate})
+				token_candidate = ""
+			} else if t.symbolsMap[token_candidate] && (token_candidate != "/" || cur_char != "*") {
+				t.Tokens = append(t.Tokens, Token{SYMBOL, token_candidate})
+				token_candidate = ""
+			} else if t.StringVal(token_candidate) {
+				t.Tokens = append(t.Tokens, Token{STRING_CONST, token_candidate[1 : len(token_candidate)-1]})
+			} else if t.Identifier(token_candidate) && !((cur_char > "a" && cur_char < "z") || (cur_char > "A" && cur_char < "Z") || (cur_char > "0" && cur_char < "9") || cur_char == "_") {
+				t.Tokens = append(t.Tokens, Token{IDENTIFIER, token_candidate})
+				token_candidate = ""
+			} else if t.IntVal(token_candidate) && !(cur_char > "0" && cur_char < "9") {
+				t.Tokens = append(t.Tokens, Token{INT_CONST, token_candidate})
+				token_candidate = ""
+			} else if t.BlockComment(token_candidate) {
+				token_candidate = ""
+			}
+
+			if cur_char == "0" {
+			} else if cur_char == " " && !strings.HasPrefix(token_candidate, "\"") {
+			} else {
+				token_candidate += cur_char
+			}
 		}
 	}
 }
