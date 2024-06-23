@@ -31,7 +31,7 @@ type Tokeniser struct {
 	file         *os.File
 	currentLine  string
 	reader       *bufio.Reader
-	tokens       []Token
+	Tokens       []Token
 	lengthTokens int
 	keywordsMap  map[string]bool
 	symbolsMap   map[string]bool
@@ -160,18 +160,18 @@ func (t *Tokeniser) TokeniseLine() {
 			cur_char += string(chars[i])
 		}
 		if t.keywordsMap[token_candidate] && !t.Identifier(cur_char) {
-			t.tokens = append(t.tokens, Token{KEYWORD, token_candidate})
+			t.Tokens = append(t.Tokens, Token{KEYWORD, token_candidate})
 			token_candidate = ""
 		} else if t.symbolsMap[token_candidate] && (token_candidate != "/" || cur_char != "*") {
-			t.tokens = append(t.tokens, Token{SYMBOL, token_candidate})
+			t.Tokens = append(t.Tokens, Token{SYMBOL, token_candidate})
 			token_candidate = ""
 		} else if t.StringVal(token_candidate) {
-			t.tokens = append(t.tokens, Token{STRING_CONST, token_candidate[1 : len(token_candidate)-1]})
+			t.Tokens = append(t.Tokens, Token{STRING_CONST, token_candidate[1 : len(token_candidate)-1]})
 		} else if t.Identifier(token_candidate) && !((cur_char > "a" && cur_char < "z") || (cur_char > "A" && cur_char < "Z") || (cur_char > "0" && cur_char < "9") || cur_char == "_") {
-			t.tokens = append(t.tokens, Token{IDENTIFIER, token_candidate})
+			t.Tokens = append(t.Tokens, Token{IDENTIFIER, token_candidate})
 			token_candidate = ""
 		} else if t.IntVal(token_candidate) && !(cur_char > "0" && cur_char < "9") {
-			t.tokens = append(t.tokens, Token{INT_CONST, token_candidate})
+			t.Tokens = append(t.Tokens, Token{INT_CONST, token_candidate})
 			token_candidate = ""
 		}
 
