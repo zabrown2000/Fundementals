@@ -46,11 +46,14 @@ func (ce *CompilationEngine) CompileClass() {
 	//Purpose: Compiles a complete class.
 	//Steps:
 	//1. Write the opening tag <class>.
+	// TC and close tag for plain when nothing's been opened?
 	ce.WriteOpenTag(ce.hierarchWriter, "class")
 	ce.WriteCloseTag(ce.plainWriter, "tokens")
 	//2. Advance the tokeniser to the next token and expect the keyword class.
 	ce.GetToken()
-	if ce.currentToken.Token_type != 1 { // not a keyword
+	//TC changing if to compare content of token not just type
+	//if ce.currentToken.Token_type != 1 { // not a keyword
+	if !(ce.currentToken.Token_type == 1 && ce.currentToken.Token_content == "class") { // not a keyword
 		panic("Unexpected token type! Expected keyword")
 	}
 	//3. Write the class keyword.
@@ -76,9 +79,9 @@ func (ce *CompilationEngine) CompileClass() {
 	//     If the current token is static or field, call compileClassVarDec.
 	//     If the current token is constructor, function, or method, call compileSubroutine.
 	//     Otherwise, break the loop.
-	for {
+	for { // TC before now, you had getToken before all comparisons of content - this time not - intentional? if not, outside or in the for loop?
 		if ce.currentToken.Token_content == "static" || ce.currentToken.Token_content == "field" {
-			ce.GetToken()
+			ce.GetToken() //this maybe before th e if?
 			ce.CompileClassVarDec()
 		} else if ce.currentToken.Token_content == "constructor" || ce.currentToken.Token_content == "function" || ce.currentToken.Token_content == "method" {
 			ce.CompileSubroutine()
@@ -86,6 +89,7 @@ func (ce *CompilationEngine) CompileClass() {
 			break // class is complete
 		}
 	}
+	//TC also need to check for the closing brace - with get token can't just assume it's there
 	//9. Write the closing brace } symbol.
 	ce.WriteXML(ce.hierarchWriter, "symbol", "}")
 	ce.WriteXML(ce.plainWriter, "symbol", "}")
@@ -104,6 +108,8 @@ func (ce *CompilationEngine) CompileClassVarDec() {
 	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
 	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content) //no need to check if field or static, did that in compileClass
 	//3. Advance the tokeniser and write the type (e.g., int, boolean, or a class name).
+	// TC didn't actually get the next token here
+	// TC also class name is an identifier not a keyword, and you still need to make sure if its specifically int/boolean/char if it's a keyword
 	//ce.tokeniser.Advance()
 	if ce.currentToken.Token_type != 1 { // not a keyword
 		panic("Unexpected token type! Expected keyword for var type")
