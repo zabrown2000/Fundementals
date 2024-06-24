@@ -21,13 +21,13 @@ type CompilationEngine struct {
 }
 
 func NewCompilationEngine(plainOutputFile string, hierarchOutputFile string, tokeniser *tokeniser.Tokeniser) *CompilationEngine {
-	plainFile, err := os.Create(plainOutputFile)
+	plainFile, err := os.OpenFile(plainOutputFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
 		return nil
 	}
 	plainWriter := bufio.NewWriter(plainFile)
 
-	hierarchFile, err := os.Create(hierarchOutputFile)
+	hierarchFile, err := os.OpenFile(hierarchOutputFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
 		return nil
 	}
