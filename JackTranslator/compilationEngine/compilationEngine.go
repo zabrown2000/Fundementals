@@ -80,8 +80,11 @@ func (ce *CompilationEngine) CompileClass() {
 	//     If the current token is constructor, function, or method, call compileSubroutine.
 	//     Otherwise, break the loop.
 	for { // TC before now, you had getToken before all comparisons of content - this time not - intentional? if not, outside or in the for loop?
+		ce.GetToken()
 		if ce.currentToken.Token_content == "static" || ce.currentToken.Token_content == "field" {
-			ce.GetToken() //this maybe before th e if?
+			// TC this is for inside CompileClassVarDec - but you didn't write it to static or field to file before advancing
+			//so when you go to write you lost it - moving to inside CompileClassVarDec
+			//ce.GetToken()
 			ce.CompileClassVarDec()
 		} else if ce.currentToken.Token_content == "constructor" || ce.currentToken.Token_content == "function" || ce.currentToken.Token_content == "method" {
 			ce.CompileSubroutine()
@@ -91,7 +94,6 @@ func (ce *CompilationEngine) CompileClass() {
 	}
 	//TC also need to check for the closing brace - with get token can't just assume it's there
 	//9. Write the closing brace } symbol.
-	ce.GetToken()
 	if ce.currentToken.Token_content != "}" { // not an identifier
 		panic("Unexpected token! Expected }")
 	}
@@ -113,13 +115,21 @@ func (ce *CompilationEngine) CompileClassVarDec() {
 	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content) //no need to check if field or static, did that in compileClass
 	//3. Advance the tokeniser and write the type (e.g., int, boolean, or a class name).
 	// TC didn't actually get the next token here
+	ce.GetToken()
 	// TC also class name is an identifier not a keyword, and you still need to make sure if its specifically int/boolean/char if it's a keyword
 	//ce.tokeniser.Advance()
-	if ce.currentToken.Token_type != 1 { // not a keyword
-		panic("Unexpected token type! Expected keyword for var type")
+	// TC technically we should be calling CompileClassName not just checking here
+	if !(ce.currentToken.Token_type == 1 && (ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "char" ||
+		ce.currentToken.Token_content == "boolean")) || !(ce.currentToken.Token_type == 3) { // not a keyword or an identifier
+		panic("Unexpected token type! Expected keyword for var type or identifier")
 	}
-	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+	if ce.currentToken.Token_type == 1 {
+		ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+	} else if ce.currentToken.Token_type == 3 {
+		ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
+	}
 	//4. Advance the tokeniser and write the first variable name. ---are all 3 written consec inside tag? seems like do writeXml
 	ce.GetToken()
 	if ce.currentToken.Token_type != 3 { // not an identifier
@@ -146,6 +156,10 @@ func (ce *CompilationEngine) CompileClassVarDec() {
 		}
 	}
 	//6. Write the semicolon ; symbol.
+	// TC need to check if we got the semicolon not just assume!
+	if ce.currentToken.Token_content != ";" {
+		panic("Unexpected token type! Expected symbol ;")
+	}
 	ce.WriteXML(ce.hierarchWriter, "symbol", ";")
 	ce.WriteXML(ce.plainWriter, "symbol", ";")
 	//7. Write the closing tag </classVarDec>.
