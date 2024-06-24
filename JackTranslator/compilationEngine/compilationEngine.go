@@ -81,7 +81,7 @@ func (ce *CompilationEngine) CompileClass() {
 	//     Otherwise, break the loop.
 	for { // TC before now, you had getToken before all comparisons of content - this time not - intentional? if not, outside or in the for loop?
 		ce.GetToken()
-		if ce.currentToken.Token_content == "static" || ce.currentToken.Token_content == "field" {
+		if ce.currentToken.Token_type == 1 && (ce.currentToken.Token_content == "static" || ce.currentToken.Token_content == "field") {
 			// TC this is for inside CompileClassVarDec - but you didn't write it to static or field to file before advancing
 			//so when you go to write you lost it - moving to inside CompileClassVarDec
 			//ce.GetToken()
@@ -118,7 +118,7 @@ func (ce *CompilationEngine) CompileClassVarDec() {
 	ce.GetToken()
 	// TC also class name is an identifier not a keyword, and you still need to make sure if its specifically int/boolean/char if it's a keyword
 	//ce.tokeniser.Advance()
-	// TC technically we should be calling CompileClassName not just checking here
+	// TC technically we should be calling CompileType and CompileClassName not just checking here
 	if !(ce.currentToken.Token_type == 1 && (ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "char" ||
 		ce.currentToken.Token_content == "boolean")) || !(ce.currentToken.Token_type == 3) { // not a keyword or an identifier
 		panic("Unexpected token type! Expected keyword for var type or identifier")
@@ -179,19 +179,28 @@ func (ce *CompilationEngine) CompileSubroutine() {
 		panic("Unexpected token type! Expected keyword for subroutine")
 	}
 	//3. Advance the tokeniser and write the return type (void or a type).
+	// TC again we should technically be calling CompileType (reminder types are either 3 specific keywords or an identifier
 	ce.GetToken()
-	if ce.currentToken.Token_type != 1 { // not a keyword
-		panic("Unexpected token type! Expected keyword for subroutine return type")
+	if !(ce.currentToken.Token_type == 1 && (ce.currentToken.Token_content == "void" || ce.currentToken.Token_content == "char" ||
+		ce.currentToken.Token_content == "boolean")) || !(ce.currentToken.Token_type == 3) { // not a keyword or a type
+		panic("Unexpected token type! Expected keyword or identifier for subroutine return type")
 	}
-	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+	if ce.currentToken.Token_type == 1 {
+		ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+	} else if ce.currentToken.Token_type == 3 {
+		ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
+	}
 	//4. Advance the tokeniser and write the subroutine name.
 	ce.GetToken()
-	if ce.currentToken.Token_type != 3 { // not an identifier
+	if ce.currentToken.Token_type == 3 {
+		ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
+	} else {
 		panic("Unexpected token type! Expected identifier for subroutine name")
 	}
-	ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
+
 	//5. Advance the tokeniser and write the opening parenthesis (.
 	ce.GetToken()
 	if ce.currentToken.Token_type == 2 && ce.currentToken.Token_content == "(" {
@@ -201,15 +210,22 @@ func (ce *CompilationEngine) CompileSubroutine() {
 		panic("Unexpected token! Expected (")
 	}
 	//6. Advance the tokeniser and call compileParameterList.
+	// TC need to check if next token is ) not ( as not all functions/methods/constructors actually have a parameter list?
 	ce.GetToken()
-	if ce.currentToken.Token_content == "(" {
+	if ce.currentToken.Token_content != ")" {
 		ce.CompileParameterList()
 	}
-	//7. Write the closing parenthesis ).
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	//7. Write the closing parenthesis ) - when no parameters token from getToken above, otherwise from getToken in broken loop in CompileParameterList
+	if ce.currentToken.Token_content == ")" {
+		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	} else {
+		panic("Unexpected token type! Expected )")
+	}
 	//8. Advance the tokeniser and call compileSubroutineBody.
-	ce.GetToken()
+	// TC for sake of uniformity - call getToken from inside CompileSubroutineBody? - already called in CompileParameterList -
+	// TC this will advance twice before we check anything so removing here
+	//ce.GetToken()
 	ce.CompileSubroutineBody()
 	//9. Write the closing tag </subroutineDec>.
 	ce.WriteCloseTag(ce.hierarchWriter, "subroutineDec")
