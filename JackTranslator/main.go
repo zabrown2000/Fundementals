@@ -43,8 +43,8 @@ func main() {
 			}
 			tkn.TokeniseFile()
 
-			hierarchOutPath := strings.TrimSuffix(CurJACK, ".jack") + "New.xml"
-			plainOutPath := strings.TrimSuffix(CurJACK, ".jack") + "NewT.xml"
+			hierarchOutPath := strings.TrimSuffix(dir_path+CurJACK, ".jack") + "New.xml"
+			plainOutPath := strings.TrimSuffix(dir_path+CurJACK, ".jack") + "NewT.xml"
 			//fileOut, err := os.Create(hierarchOutPath)
 			//if err != nil {
 			//	fmt.Println("Failed to create hierarch output file:", hierarchOutPath)
