@@ -23,8 +23,8 @@ const (
 )
 
 type Token struct {
-	Token_type int
-	Token      string
+	Token_type    int
+	Token_content string
 }
 
 type Tokeniser struct {
