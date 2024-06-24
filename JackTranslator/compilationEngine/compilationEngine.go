@@ -76,7 +76,7 @@ func (ce *CompilationEngine) CompileClass() {
 	//     If the current token is static or field, call compileClassVarDec.
 	//     If the current token is constructor, function, or method, call compileSubroutine.
 	//     Otherwise, break the loop.
-	for ce.tokeniser.HasMoreTokens() {
+	for {
 		if ce.currentToken.Token == "static" || ce.currentToken.Token == "field" {
 			ce.GetToken()
 			ce.CompileClassVarDec()
