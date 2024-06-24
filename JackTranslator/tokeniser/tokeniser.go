@@ -32,7 +32,7 @@ type Tokeniser struct {
 	currentLine  string
 	reader       *bufio.Reader
 	Tokens       []Token
-	lengthTokens int
+	LengthTokens int
 	keywordsMap  map[string]bool
 	symbolsMap   map[string]bool
 }
@@ -111,18 +111,24 @@ func (t *Tokeniser) parseNextLine() string {
 }
 
 func (t *Tokeniser) init() {
+	//fmt.Println("in init function")
 	keywords := []string{"class", "constructor", "method", "function", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null",
 		"this", "let", "do", "if", "else", "while", "return"}
 	symbols := []string{"{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"}
 	//Map for keywords
-	keywordsMap := make(map[string]bool)
+	t.keywordsMap = make(map[string]bool)
 	for _, v := range keywords {
-		keywordsMap[v] = true
+		t.keywordsMap[v] = true
 	}
-	symbolsMap := make(map[string]bool)
+	//fmt.Println("after keywords map")
+	//fmt.Println(t.keywordsMap["field"])
+
+	t.symbolsMap = make(map[string]bool)
 	for _, v := range symbols {
-		symbolsMap[v] = true
+		t.symbolsMap[v] = true
 	}
+	//fmt.Println("after symbols map")
+	//fmt.Println(t.symbolsMap["/"])
 }
 
 func (t *Tokeniser) TokenType() int {
@@ -141,7 +147,8 @@ func (t *Tokeniser) Identifier(s string) bool {
 		if i == 0 {
 			continue
 		}
-		if !((r > 'a' && r < 'z') || (r > 'A' && r < 'Z') || (r > '0' && r < '9') || r == '_') {
+
+		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '_') {
 			return false
 		}
 
@@ -168,35 +175,61 @@ func (t *Tokeniser) BlockComment(s string) bool {
 }
 
 func (t *Tokeniser) TokeniseFile() {
+	//fmt.Println("in tokeniseFile")
 	for {
+
 		line := t.parseNextLine() // parser returns line by line
-		if !t.HasMoreLines() {
-			break
-		}
+		//fmt.Println("parsedline")
+		//fmt.Println(line)
 		chars := []rune(line)
 		cur_char := ""
 		token_candidate := ""
 
 		for i := 0; i <= len(chars); i++ {
+			//fmt.Println("in 2nd for loop")
+			//fmt.Println("i is: ")
+			//fmt.Println(i)
+			//fmt.Println("token_candidate is: " + token_candidate)
+			//fmt.Println(cur_char)
 			if i < len(chars) {
-				cur_char += string(chars[i])
+				cur_char = string(chars[i])
 			}
 			if t.keywordsMap[token_candidate] && !t.Identifier(cur_char) {
+				//fmt.Println("Keyword")
 				t.Tokens = append(t.Tokens, Token{KEYWORD, token_candidate})
+				//fmt.Println(token_candidate)
 				token_candidate = ""
+				t.LengthTokens++
 			} else if t.symbolsMap[token_candidate] && (token_candidate != "/" || cur_char != "*") {
+				//fmt.Println("Symbol")
 				t.Tokens = append(t.Tokens, Token{SYMBOL, token_candidate})
+				//fmt.Println(token_candidate)
 				token_candidate = ""
+				t.LengthTokens++
 			} else if t.StringVal(token_candidate) {
+				//fmt.Println("String")
 				t.Tokens = append(t.Tokens, Token{STRING_CONST, token_candidate[1 : len(token_candidate)-1]})
-			} else if t.Identifier(token_candidate) && !((cur_char > "a" && cur_char < "z") || (cur_char > "A" && cur_char < "Z") || (cur_char > "0" && cur_char < "9") || cur_char == "_") {
+				//fmt.Println(token_candidate)
+				token_candidate = ""
+				t.LengthTokens++
+			} else if t.Identifier(token_candidate) && !((cur_char >= "a" && cur_char <= "z") || (cur_char >= "A" && cur_char <= "Z") || (cur_char >= "0" && cur_char <= "9") || cur_char == "_") {
+				//fmt.Println("Identifier")
 				t.Tokens = append(t.Tokens, Token{IDENTIFIER, token_candidate})
+				//fmt.Println(token_candidate)
 				token_candidate = ""
+				t.LengthTokens++
 			} else if t.IntVal(token_candidate) && !(cur_char > "0" && cur_char < "9") {
+				//fmt.Println("Int")
 				t.Tokens = append(t.Tokens, Token{INT_CONST, token_candidate})
+				//fmt.Println(token_candidate)
 				token_candidate = ""
+				t.LengthTokens++
 			} else if t.BlockComment(token_candidate) {
+				//fmt.Println("BlockComment")
+				//fmt.Println(token_candidate)
 				token_candidate = ""
+				t.LengthTokens++
+
 			}
 
 			if cur_char == "0" {
@@ -204,6 +237,10 @@ func (t *Tokeniser) TokeniseFile() {
 			} else {
 				token_candidate += cur_char
 			}
+		}
+
+		if !t.HasMoreLines() {
+			break
 		}
 	}
 }

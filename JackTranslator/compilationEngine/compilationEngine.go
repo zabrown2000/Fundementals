@@ -9,7 +9,7 @@ import (
 // new method: tokeniser creates list and sends it here where it gets handled
 // will have function to get next token in tokens list
 // need 2 writings:
-// 1. xml with just list of keywords, symbols, indentifiers, etc w/o enclosing tags
+// 1. xml with just list of keywords, symbols, identifiers, etc w/o enclosing tags
 // 2. xml with hierarchy
 
 type CompilationEngine struct {

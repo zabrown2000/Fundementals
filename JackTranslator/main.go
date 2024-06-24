@@ -42,6 +42,11 @@ func main() {
 				return
 			}
 			tkn.TokeniseFile()
+			//fmt.Println(tkn.LengthTokens)
+			for i := 0; i < tkn.LengthTokens-1; i++ {
+				//fmt.Println(tkn.Tokens[i].Token_type)
+				//fmt.Println(tkn.Tokens[i].Token)
+			}
 
 			hierarchOutPath := strings.TrimSuffix(dir_path+CurJACK, ".jack") + "New.xml"
 			plainOutPath := strings.TrimSuffix(dir_path+CurJACK, ".jack") + "NewT.xml"
