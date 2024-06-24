@@ -91,6 +91,10 @@ func (ce *CompilationEngine) CompileClass() {
 	}
 	//TC also need to check for the closing brace - with get token can't just assume it's there
 	//9. Write the closing brace } symbol.
+	ce.GetToken()
+	if ce.currentToken.Token_content != "}" { // not an identifier
+		panic("Unexpected token! Expected }")
+	}
 	ce.WriteXML(ce.hierarchWriter, "symbol", "}")
 	ce.WriteXML(ce.plainWriter, "symbol", "}")
 	//10. Write the closing tag </class>.
