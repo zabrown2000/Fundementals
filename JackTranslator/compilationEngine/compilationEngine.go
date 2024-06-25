@@ -164,8 +164,8 @@ func (ce *CompilationEngine) CompileSubroutine() {
 	}
 	// Advance the tokeniser and write the return type (void or a type).
 	ce.GetToken()
-	if !(ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "void" || ce.currentToken.Token_content == "char" ||
-		ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "boolean")) || !(ce.currentToken.Token_type == tokeniser.IDENTIFIER) { // not a keyword or a type
+	if !((ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "void" || ce.currentToken.Token_content == "char" ||
+		ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "boolean")) || (ce.currentToken.Token_type == tokeniser.IDENTIFIER)) { // not a keyword or a type
 		panic("Unexpected token type! Expected keyword or identifier for subroutine return type")
 	}
 	if ce.currentToken.Token_type == tokeniser.KEYWORD {
@@ -299,9 +299,9 @@ func (ce *CompilationEngine) CompileVarDec() {
 	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
 	// Advance the tokeniser and write the type.
 	ce.GetToken()
-	if !(ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "char" ||
-		ce.currentToken.Token_content == "boolean")) || !(ce.currentToken.Token_type == tokeniser.IDENTIFIER) { // not a keyword or an identifier
-		panic("Unexpected token type! Expected keyword for var type or identifier")
+	if !((ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "void" || ce.currentToken.Token_content == "char" ||
+		ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "boolean")) || (ce.currentToken.Token_type == tokeniser.IDENTIFIER)) { // not a keyword or a type
+		panic("Unexpected token type! Expected keyword or identifier for subroutine return type")
 	}
 	if ce.currentToken.Token_type == tokeniser.KEYWORD {
 		ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
@@ -351,7 +351,6 @@ func (ce *CompilationEngine) CompileStatements() {
 	ce.WriteOpenTag(ce.hierarchWriter, "statements")
 	// Loop to handle each statement:
 	for {
-		ce.GetToken()
 		if ce.currentToken.Token_type == tokeniser.KEYWORD && ce.currentToken.Token_content == "let" {
 			ce.CompileLet()
 		} else if ce.currentToken.Token_type == tokeniser.KEYWORD && ce.currentToken.Token_content == "if" {
@@ -365,6 +364,7 @@ func (ce *CompilationEngine) CompileStatements() {
 		} else {
 			break
 		}
+		ce.GetToken()
 	}
 	// Write the closing tag </statements>
 	ce.WriteCloseTag(ce.hierarchWriter, "statements")
@@ -477,6 +477,7 @@ func (ce *CompilationEngine) CompileWhile() {
 	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
 	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Call compileStatements.
+	ce.GetToken()
 	ce.CompileStatements()
 	// Write the closing brace }.
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
@@ -546,6 +547,7 @@ func (ce *CompilationEngine) CompileIf() {
 	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
 	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Call compileStatements.
+	ce.GetToken()
 	ce.CompileStatements()
 	//8. Write the closing brace }.
 	ce.GetToken()
@@ -566,6 +568,7 @@ func (ce *CompilationEngine) CompileIf() {
 		}
 		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
 		ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+		ce.GetToken()
 		ce.CompileStatements()
 		if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
 			panic("Unexpected token! Expected }")
@@ -733,6 +736,9 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
 		ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	} else if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "." {
+		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+		ce.GetToken()
 		if ce.currentToken.Token_type != tokeniser.IDENTIFIER { // not an identifier
 			panic("Unexpected token type! Expected identifier for class or var name")
 		}
