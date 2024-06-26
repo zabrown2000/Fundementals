@@ -174,6 +174,10 @@ func (t *Tokeniser) BlockComment(s string) bool {
 	return len(s) > 3 && strings.HasPrefix(s, "/*") && strings.HasSuffix(s, "*/")
 }
 
+func (t *Tokeniser) LineComment(s string) bool {
+	return len(s) > 2 && strings.HasPrefix(s, "//")
+}
+
 func (t *Tokeniser) TokeniseFile() {
 	//fmt.Println("in tokeniseFile")
 	for {
@@ -194,6 +198,12 @@ func (t *Tokeniser) TokeniseFile() {
 			if i < len(chars) {
 				cur_char = string(chars[i])
 			}
+
+			// Check for line comment start and skip the rest of the line
+			if i < len(chars)-1 && cur_char == "/" && string(chars[i+1]) == "/" {
+				break
+			}
+
 			if t.keywordsMap[token_candidate] && !t.Identifier(cur_char) {
 				//fmt.Println("Keyword")
 				t.Tokens = append(t.Tokens, Token{KEYWORD, token_candidate})
