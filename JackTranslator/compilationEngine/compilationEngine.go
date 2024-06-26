@@ -403,7 +403,7 @@ func (ce *CompilationEngine) CompileLet() {
 			ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 			ce.GetToken()
 		} else {
-			panic("Unexpected token! Expected [")
+			panic("Unexpected token! Expected ]")
 		}
 	}
 	// Write the equals sign =.
