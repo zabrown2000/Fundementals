@@ -106,7 +106,7 @@ func (ce *CompilationEngine) CompileClassVarDec() {
 	ce.GetToken()
 	// TC technically we should be calling CompileType and CompileClassName not just checking here
 	if !(ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "char" ||
-		ce.currentToken.Token_content == "boolean")) || !(ce.currentToken.Token_type == tokeniser.IDENTIFIER) { // not a keyword or an identifier
+		ce.currentToken.Token_content == "boolean")) && !(ce.currentToken.Token_type == tokeniser.IDENTIFIER) { // not a keyword or an identifier
 		panic("Unexpected token type! Expected keyword for var type or identifier")
 	}
 	if ce.currentToken.Token_type == tokeniser.KEYWORD {
@@ -194,9 +194,8 @@ func (ce *CompilationEngine) CompileSubroutine() {
 	}
 	// Advance the tokeniser and call compileParameterList.
 	ce.GetToken()
-	if ce.currentToken.Token_content != ")" {
-		ce.CompileParameterList()
-	}
+	ce.CompileParameterList()
+
 	// Write the closing parenthesis ) - when no parameters token from getToken above, otherwise from getToken in broken loop in CompileParameterList
 	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")" {
 		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
@@ -221,11 +220,17 @@ func (ce *CompilationEngine) CompileParameterList() {
 
 	// Write the opening tag <parameterList>
 	ce.WriteOpenTag(ce.hierarchWriter, "parameterList")
+	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")" {
+		ce.WriteCloseTag(ce.hierarchWriter, "parameterList")
+		return
+	} else {
+		ce.GoBackToken() //will get next token in loop
+	}
 	// Loop to handle parameters:
 	for {
 		ce.GetToken()
 		if !(ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "char" ||
-			ce.currentToken.Token_content == "boolean")) || !(ce.currentToken.Token_type == tokeniser.IDENTIFIER) { // not a keyword or an identifier
+			ce.currentToken.Token_content == "boolean")) && !(ce.currentToken.Token_type == tokeniser.IDENTIFIER) { // not a keyword or an identifier
 			panic("Unexpected token type! Expected keyword for var type or identifier")
 		}
 		if ce.currentToken.Token_type == tokeniser.KEYWORD {
@@ -600,15 +605,15 @@ func (ce *CompilationEngine) CompileExpression() {
 		ce.GetToken()
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && (ce.currentToken.Token_content == "+" || ce.currentToken.Token_content == "-" || ce.currentToken.Token_content == "*" || ce.currentToken.Token_content == "/" || ce.currentToken.Token_content == "&" || ce.currentToken.Token_content == "|" || ce.currentToken.Token_content == "<" || ce.currentToken.Token_content == ">" || ce.currentToken.Token_content == "=") {
 			str := ce.currentToken.Token_content
-			//if str == "<" {
-			//	str = "&lt;"
-			//} else if str == ">" {
-			//	str = "&gt;"
-			//} else if str == "&" {
-			//	str = "&amp;"
-			//} else if str == `"` {
-			//	str = "&quote;"
-			//}
+			if str == "<" {
+				str = "&lt;"
+			} else if str == ">" {
+				str = "&gt;"
+			} else if str == "&" {
+				str = "&amp;"
+			} else if str == `"` {
+				str = "&quote;"
+			}
 			ce.WriteXML(ce.hierarchWriter, "symbol", str)
 			ce.WriteXML(ce.plainWriter, "symbol", str)
 			ce.GetToken()
@@ -700,6 +705,7 @@ func (ce *CompilationEngine) CompileExpressionList() {
 	// start an expression such as integer constants, string constants, keyword constants, variable names, subroutine calls,
 	// expressions enclosed in parentheses, and unary operators.
 	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")" {
+		ce.WriteCloseTag(ce.hierarchWriter, "expressionList")
 		return // empty list
 	}
 	// If there is at least one expression: Call compileExpression to compile the first expression.
