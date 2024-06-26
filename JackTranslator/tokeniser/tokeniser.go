@@ -180,14 +180,36 @@ func (t *Tokeniser) LineComment(s string) bool {
 
 func (t *Tokeniser) TokeniseFile() {
 	//fmt.Println("in tokeniseFile")
-	token_candidate := ""
+	inBlockComment := false
+
 	for {
 
 		line := t.parseNextLine() // parser returns line by line
 		//fmt.Println("parsedline")
 		//fmt.Println(line)
+		// Handle block comments
+		if inBlockComment {
+			if endIdx := strings.Index(line, "*/"); endIdx != -1 {
+				line = line[endIdx+2:]
+				inBlockComment = false
+			} else {
+				continue
+			}
+		}
+
+		// Check for the start of a block comment
+		if startIdx := strings.Index(line, "/*"); startIdx != -1 {
+			endIdx := strings.Index(line[startIdx:], "*/")
+			if endIdx != -1 {
+				line = line[:startIdx] + line[startIdx+endIdx+2:]
+			} else {
+				line = line[:startIdx]
+				inBlockComment = true
+			}
+		}
 		chars := []rune(line)
 		cur_char := ""
+		token_candidate := ""
 
 		for i := 0; i <= len(chars); i++ {
 			//fmt.Println("in 2nd for loop")
