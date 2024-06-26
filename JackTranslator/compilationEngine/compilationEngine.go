@@ -598,15 +598,15 @@ func (ce *CompilationEngine) CompileExpression() {
 		ce.GetToken()
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && (ce.currentToken.Token_content == "+" || ce.currentToken.Token_content == "-" || ce.currentToken.Token_content == "*" || ce.currentToken.Token_content == "/" || ce.currentToken.Token_content == "&" || ce.currentToken.Token_content == "|" || ce.currentToken.Token_content == "<" || ce.currentToken.Token_content == ">" || ce.currentToken.Token_content == "=") {
 			str := ce.currentToken.Token_content
-			if str == "<" {
-				str = "&lt;"
-			} else if str == ">" {
-				str = "&gt;"
-			} else if str == "&" {
-				str = "&amp;"
-			} else if str == `"` {
-				str = "&quote;"
-			}
+			//if str == "<" {
+			//	str = "&lt;"
+			//} else if str == ">" {
+			//	str = "&gt;"
+			//} else if str == "&" {
+			//	str = "&amp;"
+			//} else if str == `"` {
+			//	str = "&quote;"
+			//}
 			ce.WriteXML(ce.hierarchWriter, "symbol", str)
 			ce.WriteXML(ce.plainWriter, "symbol", str)
 			ce.GetToken()
