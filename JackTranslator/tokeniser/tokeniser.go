@@ -180,6 +180,7 @@ func (t *Tokeniser) LineComment(s string) bool {
 
 func (t *Tokeniser) TokeniseFile() {
 	//fmt.Println("in tokeniseFile")
+	token_candidate := ""
 	for {
 
 		line := t.parseNextLine() // parser returns line by line
@@ -187,7 +188,6 @@ func (t *Tokeniser) TokeniseFile() {
 		//fmt.Println(line)
 		chars := []rune(line)
 		cur_char := ""
-		token_candidate := ""
 
 		for i := 0; i <= len(chars); i++ {
 			//fmt.Println("in 2nd for loop")
@@ -228,7 +228,7 @@ func (t *Tokeniser) TokeniseFile() {
 				//fmt.Println(token_candidate)
 				token_candidate = ""
 				t.LengthTokens++
-			} else if t.IntVal(token_candidate) && !(cur_char > "0" && cur_char < "9") {
+			} else if t.IntVal(token_candidate) && !(cur_char >= "0" && cur_char <= "9") {
 				//fmt.Println("Int")
 				t.Tokens = append(t.Tokens, Token{INT_CONST, token_candidate})
 				//fmt.Println(token_candidate)

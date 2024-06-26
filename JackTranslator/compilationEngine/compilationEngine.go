@@ -47,6 +47,9 @@ func (ce *CompilationEngine) CompileClass() {
 	// Advance the tokeniser to the next token and expect the keyword class.
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.KEYWORD && ce.currentToken.Token_content == "class") { // not a keyword and/or not 'class'
+		println(ce.currentToken.Token_content)
+		ce.GetToken()
+		println(ce.currentToken.Token_content)
 		panic("Unexpected token type! Expected keyword class")
 	}
 	// Write the class keyword.
@@ -236,13 +239,15 @@ func (ce *CompilationEngine) CompileParameterList() {
 		if ce.currentToken.Token_type == tokeniser.KEYWORD {
 			ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
 			ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+			ce.GetToken()
 		} else if ce.currentToken.Token_type == tokeniser.IDENTIFIER {
 			ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
 			ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
+			ce.GetToken()
 		}
-		// Advance the tokeniser and write the variable name.
-		ce.GetToken()
+		// Write the variable name.
 		if ce.currentToken.Token_type != tokeniser.IDENTIFIER { // not an identifier
+			println(ce.currentToken.Token_content)
 			panic("Unexpected token type! Expected identifier for variable name")
 		}
 		ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
@@ -251,7 +256,6 @@ func (ce *CompilationEngine) CompileParameterList() {
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "," {
 			ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
 			ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
-			ce.GetToken()
 		} else {
 			break //no more params
 		}
@@ -560,7 +564,6 @@ func (ce *CompilationEngine) CompileIf() {
 	ce.GetToken()
 	ce.CompileStatements()
 	//8. Write the closing brace }.
-	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
 		panic("Unexpected token! Expected }")
 	}
