@@ -678,11 +678,11 @@ func (ce *CompilationEngine) CompileTerm() {
 			ce.CompileTerm()
 		}
 	} else if ce.currentToken.Token_type == tokeniser.INT_CONST {
-		ce.WriteXML(ce.hierarchWriter, "int_const", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "int_const", ce.currentToken.Token_content)
+		ce.WriteXML(ce.hierarchWriter, "integerConstant", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "integerConstant", ce.currentToken.Token_content)
 	} else if ce.currentToken.Token_type == tokeniser.STRING_CONST {
-		ce.WriteXML(ce.hierarchWriter, "string_const", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "string_const", ce.currentToken.Token_content)
+		ce.WriteXML(ce.hierarchWriter, "stringConstant", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "stringConstant", ce.currentToken.Token_content)
 	}
 	// Write the closing tag </term>.
 	ce.WriteCloseTag(ce.hierarchWriter, "term")
