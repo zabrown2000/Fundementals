@@ -6,8 +6,6 @@ import (
 	"os"
 )
 
-// TO DO: once all works, put checking type into its own function - int, bool, char (keywords), or identifier
-
 type CompilationEngine struct {
 	tokeniser         *tokeniser.Tokeniser
 	plainWriter       *bufio.Writer
@@ -72,12 +70,9 @@ func (ce *CompilationEngine) CompileClass() {
 	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
 	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Loop to handle class variable declarations (static or field) and subroutine declarations (constructor, function, or method):
-	for { // TC before now, you had getToken before all comparisons of content - this time not - intentional? if not, outside or in the for loop?
+	for {
 		ce.GetToken()
 		if ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "static" || ce.currentToken.Token_content == "field") {
-			// TC this is for inside CompileClassVarDec - but you didn't write it to static or field to file before advancing
-			//so when you go to write you lost it - moving to inside CompileClassVarDec
-			//ce.GetToken()
 			ce.CompileClassVarDec()
 		} else if ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "constructor" || ce.currentToken.Token_content == "function" || ce.currentToken.Token_content == "method") {
 			ce.CompileSubroutine()
@@ -105,9 +100,8 @@ func (ce *CompilationEngine) CompileClassVarDec() {
 	// Write the current token (static or field).
 	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
 	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content) //no need to check if field or static, did that in compileClass
-	// Advance the tokeniser and write the type (e.g., int, boolean, char, or a class name).
+	// Advance the tokeniser and write the type
 	ce.GetToken()
-	// TC technically we should be calling CompileType and CompileClassName not just checking here
 	if !(ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "char" ||
 		ce.currentToken.Token_content == "boolean")) && !(ce.currentToken.Token_type == tokeniser.IDENTIFIER) { // not a keyword or an identifier
 		panic("Unexpected token type! Expected keyword for var type or identifier")
@@ -207,10 +201,6 @@ func (ce *CompilationEngine) CompileSubroutine() {
 		panic("Unexpected token type! Expected symbol )")
 	}
 	// Advance the tokeniser and call compileSubroutineBody.
-	// TC for sake of uniformity - call getToken from inside CompileSubroutineBody? - already called in CompileParameterList -
-	// TC this will advance twice before we check anything so removing here
-	// ZB just like with paramList we do the intial getToken outside of the func and then more inside
-	// ZB we need this before we call because the currentToken at this point will be ) and we need to move forward
 	ce.GetToken()
 	ce.CompileSubroutineBody()
 	// Write the closing tag </subroutineDec>.
@@ -397,16 +387,12 @@ func (ce *CompilationEngine) CompileLet() {
 	ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
 	// Advance the tokeniser to check for array indexing: If the current token is an opening bracket [,
 	// write the bracket and call compileExpression. Write the closing bracket ] and advance the tokeniser.
-	// TC also no panic here?
 	ce.GetToken()
 	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "[" {
 		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
 		ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 		ce.GetToken()
 		ce.CompileExpression()
-		//ce.GetToken()
-
-		// TC no panic here for not finding?
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "]" {
 			ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
 			ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
@@ -477,7 +463,6 @@ func (ce *CompilationEngine) CompileWhile() {
 	ce.GetToken()
 	ce.CompileExpression()
 	// Write the closing parenthesis ).
-	//ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")") {
 		panic("Unexpected token! Expected )")
 	}
@@ -512,8 +497,7 @@ func (ce *CompilationEngine) CompileReturn() {
 	// Write the current token return.
 	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
 	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
-	//3. Advance the tokeniser to check for an expression:
-	//     If the current token is not a semicolon ;, call compileExpression.
+	// Advance the tokeniser to check for an expression: If the current token is not a semicolon ;, call compileExpression.
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ";") {
 		ce.CompileExpression()
@@ -563,7 +547,7 @@ func (ce *CompilationEngine) CompileIf() {
 	// Call compileStatements.
 	ce.GetToken()
 	ce.CompileStatements()
-	//8. Write the closing brace }.
+	// Write the closing brace }.
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
 		panic("Unexpected token! Expected }")
 	}
@@ -603,7 +587,7 @@ func (ce *CompilationEngine) CompileExpression() {
 	ce.WriteOpenTag(ce.hierarchWriter, "expression")
 	// Call compileTerm. --got token before calling compileExpression
 	ce.CompileTerm()
-	//3. Loop to handle additional terms connected by operators:
+	// Loop to handle additional terms connected by operators:
 	for {
 		ce.GetToken()
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && (ce.currentToken.Token_content == "+" || ce.currentToken.Token_content == "-" || ce.currentToken.Token_content == "*" || ce.currentToken.Token_content == "/" || ce.currentToken.Token_content == "&" || ce.currentToken.Token_content == "|" || ce.currentToken.Token_content == "<" || ce.currentToken.Token_content == ">" || ce.currentToken.Token_content == "=") {
@@ -641,10 +625,9 @@ func (ce *CompilationEngine) CompileTerm() {
 		ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
 		ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
 	} else if ce.currentToken.Token_type == tokeniser.IDENTIFIER {
-		// save current id, and then get next to see if symbol - look ahead
+		// save current identifier, and then get next token to see if symbol - look ahead
 		identifier := ce.currentToken.Token_content
 		ce.GetToken()
-		// TC no panic here?
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "[" {
 			// array
 			ce.WriteXML(ce.hierarchWriter, "identifier", identifier)
