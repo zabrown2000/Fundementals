@@ -388,6 +388,7 @@ func (ce *CompilationEngine) CompileLet() {
 	ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
 	// Advance the tokeniser to check for array indexing: If the current token is an opening bracket [,
 	// write the bracket and call compileExpression. Write the closing bracket ] and advance the tokeniser.
+	// TC also no panic here?
 	ce.GetToken()
 	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "[" {
 		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
@@ -395,6 +396,8 @@ func (ce *CompilationEngine) CompileLet() {
 		ce.GetToken()
 		ce.CompileExpression()
 		ce.GetToken()
+
+		// TC no panic here for not finding?
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "]" {
 			ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
 			ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
@@ -463,7 +466,7 @@ func (ce *CompilationEngine) CompileWhile() {
 	ce.GetToken()
 	ce.CompileExpression()
 	// Write the closing parenthesis ).
-	ce.GetToken()
+	//ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")") {
 		panic("Unexpected token! Expected )")
 	}
@@ -631,6 +634,7 @@ func (ce *CompilationEngine) CompileTerm() {
 		// save current id, and then get next to see if symbol - look ahead
 		identifier := ce.currentToken.Token_content
 		ce.GetToken()
+		// TC no panic here?
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "[" {
 			// array
 			ce.WriteXML(ce.hierarchWriter, "identifier", identifier)

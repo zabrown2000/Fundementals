@@ -232,7 +232,7 @@ func (t *Tokeniser) TokeniseFile() {
 
 			}
 
-			if cur_char == "0" {
+			if cur_char == "\n" {
 			} else if cur_char == " " && !strings.HasPrefix(token_candidate, "\"") {
 			} else {
 				token_candidate += cur_char
