@@ -395,7 +395,7 @@ func (ce *CompilationEngine) CompileLet() {
 		ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 		ce.GetToken()
 		ce.CompileExpression()
-		ce.GetToken()
+		//ce.GetToken()
 
 		// TC no panic here for not finding?
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "]" {
