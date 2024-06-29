@@ -6,6 +6,19 @@ import (
 	"os"
 )
 
+/*
+This class does the compilation itself. It reads its input from a JackTokenizer and writes its output into a
+VMWriter. It is organized as a series of compilexxx ( ) routines, where xxx is a syntactic element of the
+Jack language. The contract between these routines is that each compilexxx ( ) routine should read the
+syntactic construct xxx from the input, advance ( ) the tokenizer exactly beyond xxx, and emit to the output
+VM code effecting the semantics of xxx. Thus compilexxx ( ) may only be called if indeed xxx is the next
+syntactic element of the input. If xxx is a part of an expression and thus has a value, the emitted code
+should compute this value and leave it at the top of the VM stack.
+The API of this module is identical to that of the syntax analyzer’s compilation-Engine module fromchapter 10,
+and thus we suggest gradually morphing the syntax analyzer into a full compiler. Section 11.5
+provides step-by-step instructions and test programs for this construction.
+*/
+
 type CompilationEngine struct {
 	tokeniser         *tokeniser.Tokeniser
 	plainWriter       *bufio.Writer
