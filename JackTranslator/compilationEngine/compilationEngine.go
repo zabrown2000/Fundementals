@@ -346,40 +346,40 @@ func (ce *CompilationEngine) CompileStatements() {
 func (ce *CompilationEngine) CompileLet() {
 	// 'let' identifier ('[' expression ']')? '=' expression ';'
 
-	// Write the opening tag <letStatement>.
-	ce.WriteOpenTag(ce.hierarchWriter, "letStatement")
 	// Write the current token let.
-	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
 	// Advance the tokeniser and write the variable name.
 	ce.GetToken()
 	if ce.currentToken.Token_type != tokeniser.IDENTIFIER { // not an identifier
 		panic("Unexpected token type! Expected identifier for var name")
 	}
-	ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
+	varName := ce.currentToken.Token_content
+	//ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
 	// Advance the tokeniser to check for array indexing: If the current token is an opening bracket [,
 	// write the bracket and call compileExpression. Write the closing bracket ] and advance the tokeniser.
 	ce.GetToken()
+	isArray := false
 	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "[" {
-		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+		isArray = true
 		ce.GetToken()
 		ce.CompileExpression()
-		if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "]" {
-			ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-			ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
-			ce.GetToken()
-		} else {
+		if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "]") {
 			panic("Unexpected token! Expected ]")
 		}
+		ce.vmWriter.WritePush(ce.symbolTable.KindOf(varName), ce.symbolTable.IndexOf(varName))
+		ce.vmWriter.WriteArithmetic("add")
+		ce.GetToken()
 	}
 	// Write the equals sign =.
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "=") {
 		panic("Unexpected token! Expected =")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Advance the tokeniser and call compileExpression.
 	ce.GetToken()
 	ce.CompileExpression()
@@ -387,21 +387,25 @@ func (ce *CompilationEngine) CompileLet() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ";") {
 		panic("Unexpected token! Expected ;")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
-	// Write the closing tag </letStatement>.
-	ce.WriteCloseTag(ce.hierarchWriter, "letStatement")
+	if isArray {
+		ce.vmWriter.WritePop("temp", 0)
+		ce.vmWriter.WritePop("pointer", 1)
+		ce.vmWriter.WritePush("temp", 0)
+		ce.vmWriter.WritePop("that", 0)
+	} else {
+		ce.vmWriter.WritePop(ce.symbolTable.KindOf(varName), ce.symbolTable.IndexOf(varName))
+	}
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 }
 
 // CompileDo compiles a do statement.
 func (ce *CompilationEngine) CompileDo() {
 	// 'do' subroutineCall ';'
 
-	// Write the opening tag <doStatement>.
-	ce.WriteOpenTag(ce.hierarchWriter, "doStatement")
 	// Write the current token do.
-	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
 	// Advance the tokeniser and call compileSubroutineCall
 	ce.GetToken()
 	ce.CompileSubroutineCall()
@@ -410,28 +414,25 @@ func (ce *CompilationEngine) CompileDo() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ";") {
 		panic("Unexpected token! Expected ;")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
-	// Write the closing tag </doStatement>.
-	ce.WriteCloseTag(ce.hierarchWriter, "doStatement")
+	ce.vmWriter.WritePop("temp", 0)
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 }
 
 // CompileWhile compiles a while statement.
 func (ce *CompilationEngine) CompileWhile() {
 	// 'while' '('expression')' '{' statements '}'
 
-	// Write the opening tag <whileStatement>.
-	ce.WriteOpenTag(ce.hierarchWriter, "whileStatement")
 	// Write the current token while.
-	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
 	// Advance the tokeniser and write the opening parenthesis (.
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "(") {
 		panic("Unexpected token! Expected (")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Advance the tokeniser and call compileExpression.
 	ce.GetToken()
 	ce.CompileExpression()
@@ -439,15 +440,15 @@ func (ce *CompilationEngine) CompileWhile() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")") {
 		panic("Unexpected token! Expected )")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Advance the tokeniser and write the opening brace {.
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "{") {
 		panic("Unexpected token! Expected {")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Call compileStatements.
 	ce.GetToken()
 	ce.CompileStatements()
@@ -455,52 +456,47 @@ func (ce *CompilationEngine) CompileWhile() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
 		panic("Unexpected token! Expected }")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
-	// Write the closing tag </whileStatement>.
-	ce.WriteCloseTag(ce.hierarchWriter, "whileStatement")
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 }
 
 // CompileReturn compiles a return statement.
 func (ce *CompilationEngine) CompileReturn() {
 	// 'return' expression? ';'
 
-	// Write the opening tag <returnStatement>.
-	ce.WriteOpenTag(ce.hierarchWriter, "returnStatement")
 	// Write the current token return.
-	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
 	// Advance the tokeniser to check for an expression: If the current token is not a semicolon ;, call compileExpression.
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ";") {
 		ce.CompileExpression()
+	} else {
+		ce.vmWriter.WritePush("constant", 0)
 	}
 	// Write the semicolon ;. - get token before leaving compileExpression
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ";") {
 		panic("Unexpected token! Expected ;")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
-	// Write the closing tag </returnStatement>.
-	ce.WriteCloseTag(ce.hierarchWriter, "returnStatement")
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	ce.vmWriter.WriteReturn()
 }
 
 // CompileIf compiles an if statement, possibly with a trailing else clause.
 func (ce *CompilationEngine) CompileIf() {
 	// 'if' '('expression')' '{'statements'}' ('else' '{'statements'}')?
 
-	// Write the opening tag <ifStatement>.
-	ce.WriteOpenTag(ce.hierarchWriter, "ifStatement")
 	// Write the current token if.
-	ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
 	// Advance the tokeniser and write the opening parenthesis (.
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "(") {
 		panic("Unexpected token! Expected (")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Advance the tokeniser and call compileExpression.
 	ce.GetToken()
 	ce.CompileExpression()
@@ -508,15 +504,15 @@ func (ce *CompilationEngine) CompileIf() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")") {
 		panic("Unexpected token! Expected )")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Advance the tokeniser and write the opening brace {.
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "{") {
 		panic("Unexpected token! Expected {")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Call compileStatements.
 	ce.GetToken()
 	ce.CompileStatements()
@@ -524,66 +520,61 @@ func (ce *CompilationEngine) CompileIf() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
 		panic("Unexpected token! Expected }")
 	}
-	ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	// Advance the tokeniser to check for an else clause: If the current token is else, write the keyword else,
 	// the opening brace {, call compileStatements, and write the closing brace }.
 	ce.GetToken()
 	if ce.currentToken.Token_type == tokeniser.KEYWORD && ce.currentToken.Token_content == "else" {
-		ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
 		ce.GetToken()
 		if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "{") {
 			panic("Unexpected token! Expected {")
 		}
-		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 		ce.GetToken()
 		ce.CompileStatements()
 		if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
 			panic("Unexpected token! Expected }")
 		}
-		ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content)
 	} else {
 		ce.GoBackToken()
 	}
-	// Write the closing tag </ifStatement>
-	ce.WriteCloseTag(ce.hierarchWriter, "ifStatement")
 }
 
 // CompileExpression compiles an expression.
 func (ce *CompilationEngine) CompileExpression() {
 	// term (op term)*
 
-	// Write the opening tag <expression>.
-	ce.WriteOpenTag(ce.hierarchWriter, "expression")
 	// Call compileTerm. --got token before calling compileExpression
 	ce.CompileTerm()
 	// Loop to handle additional terms connected by operators:
 	for {
 		ce.GetToken()
-		if ce.currentToken.Token_type == tokeniser.SYMBOL && (ce.currentToken.Token_content == "+" || ce.currentToken.Token_content == "-" || ce.currentToken.Token_content == "*" || ce.currentToken.Token_content == "/" || ce.currentToken.Token_content == "&" || ce.currentToken.Token_content == "|" || ce.currentToken.Token_content == "<" || ce.currentToken.Token_content == ">" || ce.currentToken.Token_content == "=") {
-			str := ce.currentToken.Token_content
-			if str == "<" {
-				str = "&lt;"
-			} else if str == ">" {
-				str = "&gt;"
-			} else if str == "&" {
-				str = "&amp;"
-			} else if str == `"` {
-				str = "&quote;"
-			}
-			ce.WriteXML(ce.hierarchWriter, "symbol", str)
-			ce.WriteXML(ce.plainWriter, "symbol", str)
+		if ce.currentToken.Token_type == tokeniser.SYMBOL && isOperator(ce.currentToken.Token_content) {
+			op := ce.currentToken.Token_content
+			//if str == "<" {
+			//	str = "&lt;"
+			//} else if str == ">" {
+			//	str = "&gt;"
+			//} else if str == "&" {
+			//	str = "&amp;"
+			//} else if str == `"` {
+			//	str = "&quote;"
+			//}
+			//ce.WriteXML(ce.hierarchWriter, "symbol", str)
+			//ce.WriteXML(ce.plainWriter, "symbol", str)
 			ce.GetToken()
 			ce.CompileTerm()
+			ce.WriteArithmeticCommand(op) //wait until term is placed in stack before putting in op for postfix notation
 		} else {
 			break
 		}
 	}
-	// Write the closing tag </expression>
-	ce.WriteCloseTag(ce.hierarchWriter, "expression")
 }
 
 // CompileTerm compiles a term.
@@ -591,67 +582,91 @@ func (ce *CompilationEngine) CompileTerm() {
 	// integerConstant|stringConstant|keywordConstant|identifier|identifier'['expression']'|subroutineCall|
 	// '(' expression ')'|unaryOp term
 
-	// Write the opening tag <term>.
-	ce.WriteOpenTag(ce.hierarchWriter, "term")
 	// Depending on the current token, handle different types of terms:
 	if ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "true" || ce.currentToken.Token_content == "false" || ce.currentToken.Token_content == "null" || ce.currentToken.Token_content == "this") { // got token before called compileTerm
-		ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+		switch ce.currentToken.Token_content {
+		case "true":
+			ce.vmWriter.WritePush("constant", 0)
+			ce.vmWriter.WriteArithmetic("not")
+		case "false", "null":
+			ce.vmWriter.WritePush("constant", 0)
+		case "this":
+			ce.vmWriter.WritePush("pointer", 0)
+		}
+		//ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
 	} else if ce.currentToken.Token_type == tokeniser.IDENTIFIER {
 		// save current identifier, and then get next token to see if symbol - look ahead
 		identifier := ce.currentToken.Token_content
 		ce.GetToken()
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "[" {
 			// array
-			ce.WriteXML(ce.hierarchWriter, "identifier", identifier)
-			ce.WriteXML(ce.plainWriter, "identifier", identifier) // arrayName
-			ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-			ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content) // [
+			//ce.WriteXML(ce.hierarchWriter, "identifier", identifier)
+			//ce.WriteXML(ce.plainWriter, "identifier", identifier) // arrayName
+			//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+			//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content) // [
 			ce.GetToken()
 			ce.CompileExpression() // end with break after getToken
 			if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "]") {
 				panic("Unexpected token! Expected ]")
 			}
-			ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-			ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content) // [
+			ce.vmWriter.WritePush(ce.symbolTable.KindOf(identifier), ce.symbolTable.IndexOf(identifier))
+			ce.vmWriter.WriteArithmetic("add")
+			ce.vmWriter.WritePop("pointer", 1)
+			ce.vmWriter.WritePush("that", 0)
+			//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+			//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content) // [
 		} else if ce.currentToken.Token_type == tokeniser.SYMBOL && (ce.currentToken.Token_content == "(" || ce.currentToken.Token_content == ".") {
 			// subroutine call
 			// need to go back so function is at subroutine name
 			ce.GoBackToken()
 			ce.CompileSubroutineCall()
 		} else {
-			ce.WriteXML(ce.hierarchWriter, "identifier", identifier)
-			ce.WriteXML(ce.plainWriter, "identifier", identifier)
+			//ce.WriteXML(ce.hierarchWriter, "identifier", identifier)
+			//ce.WriteXML(ce.plainWriter, "identifier", identifier)
+			ce.vmWriter.WritePush(ce.symbolTable.KindOf(identifier), ce.symbolTable.IndexOf(identifier))
 			// need to move token back one since not using current token here
 			ce.GoBackToken()
 		}
 	} else if ce.currentToken.Token_type == tokeniser.SYMBOL {
 		symbol := ce.currentToken.Token_content
 		if symbol == "(" {
-			ce.WriteXML(ce.hierarchWriter, "symbol", symbol)
-			ce.WriteXML(ce.plainWriter, "symbol", symbol)
+			//ce.WriteXML(ce.hierarchWriter, "symbol", symbol)
+			//ce.WriteXML(ce.plainWriter, "symbol", symbol)
 			ce.GetToken()
 			ce.CompileExpression()
 			if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")") {
 				panic("Unexpected token! Expected )")
 			}
-			ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
-			ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content) // )
+			//ce.WriteXML(ce.hierarchWriter, "symbol", ce.currentToken.Token_content)
+			//ce.WriteXML(ce.plainWriter, "symbol", ce.currentToken.Token_content) // )
 		} else if symbol == "-" || symbol == "~" {
-			ce.WriteXML(ce.hierarchWriter, "symbol", symbol)
-			ce.WriteXML(ce.plainWriter, "symbol", symbol)
+			//ce.WriteXML(ce.hierarchWriter, "symbol", symbol)
+			//ce.WriteXML(ce.plainWriter, "symbol", symbol)
+			unaryOp := ce.currentToken.Token_content
 			ce.GetToken()
 			ce.CompileTerm()
+			if unaryOp == "-" {
+				ce.vmWriter.WriteArithmetic("neg")
+			} else if unaryOp == "~" {
+				ce.vmWriter.WriteArithmetic("not")
+			}
 		}
 	} else if ce.currentToken.Token_type == tokeniser.INT_CONST {
-		ce.WriteXML(ce.hierarchWriter, "integerConstant", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "integerConstant", ce.currentToken.Token_content)
+		ce.vmWriter.WritePush("constant", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.hierarchWriter, "integerConstant", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.plainWriter, "integerConstant", ce.currentToken.Token_content)
 	} else if ce.currentToken.Token_type == tokeniser.STRING_CONST {
-		ce.WriteXML(ce.hierarchWriter, "stringConstant", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "stringConstant", ce.currentToken.Token_content)
+		stringVal := ce.currentToken.Token_content
+		ce.vmWriter.WritePush("constant", len(stringVal))
+		ce.vmWriter.WriteCall("String.new", 1) //1 param, length of string
+		for _, char := range stringVal {       //NOTE: needs to be rune here?
+			ce.vmWriter.WritePush("constant", int(char))
+			ce.vmWriter.WriteCall("String.appendChar", 2) //above push and result of new strign will be in stack
+		}
+		//ce.WriteXML(ce.hierarchWriter, "stringConstant", ce.currentToken.Token_content)
+		//ce.WriteXML(ce.plainWriter, "stringConstant", ce.currentToken.Token_content)
 	}
-	// Write the closing tag </term>.
-	ce.WriteCloseTag(ce.hierarchWriter, "term")
 }
 
 // CompileExpressionList is responsible for compiling a (possibly empty) comma-separated list of expressions. This list is typically found within the argument list of a subroutine call.
@@ -690,8 +705,8 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 	if ce.currentToken.Token_type != tokeniser.IDENTIFIER { // not an identifier
 		panic("Unexpected token type! Expected identifier for subroutine name")
 	}
-	ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
-	ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
+	//ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
 	// Advance the tokeniser and write the opening parenthesis (.
 	ce.GetToken()
 	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "(" {
@@ -731,6 +746,22 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 		}
 	} else {
 		panic("Unexpected token! Expected ( or .")
+	}
+}
+
+func (ce *CompilationEngine) CompileType() {
+	if !(ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "char" ||
+		ce.currentToken.Token_content == "boolean")) && !(ce.currentToken.Token_type == tokeniser.IDENTIFIER) { // not a keyword or an identifier
+		panic("Unexpected token type! Expected keyword for type or identifier")
+	}
+	if ce.currentToken.Token_type == tokeniser.KEYWORD {
+		ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
+		ce.GetToken()
+	} else if ce.currentToken.Token_type == tokeniser.IDENTIFIER {
+		ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
+		ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
+		ce.GetToken()
 	}
 }
 
@@ -789,18 +820,30 @@ func (ce *CompilationEngine) currentFunction() string {
 	return ""
 }
 
-func (ce *CompilationEngine) CompileType() {
-	if !(ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "int" || ce.currentToken.Token_content == "char" ||
-		ce.currentToken.Token_content == "boolean")) && !(ce.currentToken.Token_type == tokeniser.IDENTIFIER) { // not a keyword or an identifier
-		panic("Unexpected token type! Expected keyword for type or identifier")
-	}
-	if ce.currentToken.Token_type == tokeniser.KEYWORD {
-		ce.WriteXML(ce.hierarchWriter, "keyword", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "keyword", ce.currentToken.Token_content)
-		ce.GetToken()
-	} else if ce.currentToken.Token_type == tokeniser.IDENTIFIER {
-		ce.WriteXML(ce.hierarchWriter, "identifier", ce.currentToken.Token_content)
-		ce.WriteXML(ce.plainWriter, "identifier", ce.currentToken.Token_content)
-		ce.GetToken()
+func isOperator(symbol string) bool {
+	return symbol == "+" || symbol == "-" || symbol == "*" || symbol == "/" ||
+		symbol == "&" || symbol == "|" || symbol == "<" || symbol == ">" || symbol == "="
+}
+
+func (ce *CompilationEngine) WriteArithmeticCommand(command string) {
+	switch command {
+	case "+":
+		ce.vmWriter.WriteArithmetic("add")
+	case "-":
+		ce.vmWriter.WriteArithmetic("sub")
+	case "*":
+		ce.vmWriter.WriteCall("Math.multiply", 2)
+	case "/":
+		ce.vmWriter.WriteCall("Math.divide", 2)
+	case "&":
+		ce.vmWriter.WriteArithmetic("and")
+	case "|":
+		ce.vmWriter.WriteArithmetic("or")
+	case "<":
+		ce.vmWriter.WriteArithmetic("lt")
+	case ">":
+		ce.vmWriter.WriteArithmetic("gt")
+	case "=":
+		ce.vmWriter.WriteArithmetic("eq")
 	}
 }
