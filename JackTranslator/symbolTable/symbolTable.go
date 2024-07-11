@@ -34,3 +34,25 @@ func NewSymbolTable() *SymbolTable {
 		indexCounters:   map[string]int{"static": 0, "field": 0, "argument": 0, "local": 0},
 	}
 }
+
+// StartSubroutine resets the subroutine scope
+func (st *SymbolTable) StartSubroutine(isMethod bool, className string) {
+	st.subroutineScope = make(map[string]Symbol)
+	st.indexCounters["argument"] = 0
+	st.indexCounters["local"] = 0
+	if isMethod {
+		st.Define("this", className, "argument")
+	}
+}
+
+// Define adds a new variable to the symbol table
+func (st *SymbolTable) Define(name, typ, kind string) {
+	index := st.indexCounters[kind]
+	symbol := Symbol{Name: name, Type: typ, Kind: kind, Index: index}
+	if kind == "static" || kind == "field" {
+		st.classScope[name] = symbol
+	} else {
+		st.subroutineScope[name] = symbol
+	}
+	st.indexCounters[kind]++
+}
