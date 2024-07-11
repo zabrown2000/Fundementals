@@ -575,7 +575,7 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 		subroutineName := ce.currentToken.Token_content
 		ce.GetToken()
 		kind := ce.symbolTable.KindOf(name)
-		if kind == "none" {
+		if kind == "NONE" {
 			ce.vmWriter.WritePush(kind, ce.symbolTable.IndexOf(name))
 			name = ce.symbolTable.TypeOf(name) + "." + subroutineName
 		} else {
@@ -607,42 +607,6 @@ func (ce *CompilationEngine) CompileType() {
 }
 
 // helper functions
-
-func (ce *CompilationEngine) WriteXML(writer *bufio.Writer, tag string, content string) {
-	toWrite := "<" + tag + ">" + content + "</" + tag + ">\n"
-	_, err := writer.Write([]byte(toWrite))
-	if err != nil {
-		return
-	}
-	err = writer.Flush()
-	if err != nil {
-		return
-	}
-}
-
-func (ce *CompilationEngine) WriteOpenTag(writer *bufio.Writer, tag string) {
-	toWrite := "<" + tag + ">\n"
-	_, err := writer.Write([]byte(toWrite))
-	if err != nil {
-		return
-	}
-	err = writer.Flush()
-	if err != nil {
-		return
-	}
-}
-
-func (ce *CompilationEngine) WriteCloseTag(writer *bufio.Writer, tag string) {
-	toWrite := "</" + tag + ">\n"
-	_, err := writer.Write([]byte(toWrite))
-	if err != nil {
-		return
-	}
-	err = writer.Flush()
-	if err != nil {
-		return
-	}
-}
 
 func (ce *CompilationEngine) GetToken() {
 	ce.currentToken = &ce.tokeniser.Tokens[ce.currentTokenIndex]
