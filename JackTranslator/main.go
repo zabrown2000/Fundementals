@@ -29,18 +29,15 @@ func main() {
 	for _, file := range files {
 		if path.Ext(file.Name()) == ".jack" {
 			CurJACK = file.Name()
-			// each vm file, create parser obj and send file to open to read
+			// each jack file, create parser obj and send file to open to read
 			tkn, err := tokeniser.New(dir_path + CurJACK)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 			tkn.TokeniseFile()
-
-			hierarchOutPath := strings.TrimSuffix(dir_path+CurJACK, ".jack") + "New.xml"
-			plainOutPath := strings.TrimSuffix(dir_path+CurJACK, ".jack") + "NewT.xml"
-
-			ce := compilationEngine.New(plainOutPath, hierarchOutPath, tkn)
+			outPath := strings.TrimSuffix(dir_path+CurJACK, ".jack") + ".vm"
+			ce := compilationEngine.New(outPath, tkn)
 			ce.CompileClass()
 			fmt.Println("End of input file: " + file.Name())
 		}
