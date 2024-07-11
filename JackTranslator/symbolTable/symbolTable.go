@@ -56,3 +56,41 @@ func (st *SymbolTable) Define(name, typ, kind string) {
 	}
 	st.indexCounters[kind]++
 }
+
+// VarCount returns the number of variables of a given kind
+func (st *SymbolTable) VarCount(kind string) int {
+	return st.indexCounters[kind]
+}
+
+// KindOf returns the kind of the named identifier
+func (st *SymbolTable) KindOf(name string) string {
+	if symbol, ok := st.subroutineScope[name]; ok {
+		return symbol.Kind
+	}
+	if symbol, ok := st.classScope[name]; ok {
+		return symbol.Kind
+	}
+	return "NONE"
+}
+
+// TypeOf returns the type of the named identifier
+func (st *SymbolTable) TypeOf(name string) string {
+	if symbol, ok := st.subroutineScope[name]; ok {
+		return symbol.Type
+	}
+	if symbol, ok := st.classScope[name]; ok {
+		return symbol.Type
+	}
+	return "NONE"
+}
+
+// IndexOf returns the index of the named identifier
+func (st *SymbolTable) IndexOf(name string) int {
+	if symbol, ok := st.subroutineScope[name]; ok {
+		return symbol.Index
+	}
+	if symbol, ok := st.classScope[name]; ok {
+		return symbol.Index
+	}
+	return -1
+}
