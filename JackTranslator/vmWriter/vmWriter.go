@@ -34,67 +34,67 @@ func New(vm_path string) *VMWriter {
 	return &VMWriter{bufio.NewWriter(write_file), ""}
 }
 
-func push(file *os.File, segment string, index int) {
-	_, err := fmt.Fprintf(file, "push %s %d\n", segment, index)
+func (vm *VMWriter) WritePush(segment string, index int) {
+	_, err := fmt.Fprintf(vm.writer, "push %s %d\n", segment, index)
 	if err != nil {
 		return
 	}
 }
 
-func pop(file *os.File, segment string, index int) {
-	_, err := fmt.Fprintf(file, "pop %s %d\n", segment, index)
+func (vm *VMWriter) WritePop(segment string, index int) {
+	_, err := fmt.Fprintf(vm.writer, "pop %s %d\n", segment, index)
 	if err != nil {
 		return
 	}
 }
 
-func label(file *os.File, labelName string) {
-	_, err := fmt.Fprintf(file, "label %s\n", labelName)
+func (vm *VMWriter) WriteLabel(labelName string) {
+	_, err := fmt.Fprintf(vm.writer, "label %s\n", labelName)
 	if err != nil {
 		return
 	}
 }
 
-func goTo(file *os.File, labelName string) {
-	_, err := fmt.Fprintf(file, "goto %s\n", labelName)
+func (vm *VMWriter) WriteGoTo(labelName string) {
+	_, err := fmt.Fprintf(vm.writer, "goto %s\n", labelName)
 	if err != nil {
 		return
 	}
 }
 
-func ifGoto(file *os.File, labelName string) {
-	_, err := fmt.Fprintf(file, "if-goto %s\n", labelName)
+func (vm *VMWriter) WriteIfGoto(labelName string) {
+	_, err := fmt.Fprintf(vm.writer, "if-goto %s\n", labelName)
 	if err != nil {
 		return
 	}
 }
 
-func function(file *os.File, functionName string, nVars int) {
-	_, err := fmt.Fprintf(file, "function %s %d\n", functionName, nVars)
+func (vm *VMWriter) WriteFunction(functionName string, nVars int) {
+	_, err := fmt.Fprintf(vm.writer, "function %s %d\n", functionName, nVars)
 	if err != nil {
 		return
 	}
 }
 
-func call(file *os.File, functionName string, nArgs int) {
-	_, err := fmt.Fprintf(file, "call %s %d\n", functionName, nArgs)
+func (vm *VMWriter) WriteCall(functionName string, nArgs int) {
+	_, err := fmt.Fprintf(vm.writer, "call %s %d\n", functionName, nArgs)
 	if err != nil {
 		return
 	}
 }
 
-func returnFunc(file *os.File) {
-	_, err := fmt.Fprintf(file, "return\n")
+func (vm *VMWriter) WriteReturn() {
+	_, err := fmt.Fprintf(vm.writer, "return\n")
 	if err != nil {
 		return
 	}
 }
 
-func arithmetic(file *os.File, command string) {
+func (vm *VMWriter) WriteArithmetic(command string) {
 	validCommands := []string{"add", "sub", "neg", "eq", "gt", "lt", "and", "or", "not"}
 	for _, validCommand := range validCommands {
 		if command == validCommand {
-			_, err := fmt.Fprintf(file, "%s\n", command)
+			_, err := fmt.Fprintf(vm.writer, "%s\n", command)
 			if err != nil {
 				return
 			}
@@ -103,14 +103,14 @@ func arithmetic(file *os.File, command string) {
 	}
 }
 
-func jackFunction(file *os.File, className, functionName string, nVars int) {
-	_, err := fmt.Fprintf(file, "function %s.%s %d\n", className, functionName, nVars)
+func (vm *VMWriter) jackFunction(className, functionName string, nVars int) {
+	_, err := fmt.Fprintf(vm.writer, "function %s.%s %d\n", className, functionName, nVars)
 	if err != nil {
 		return
 	}
 }
 
-func jackMethod(file *os.File, className, methodName string, nVars int) {
+func (vm *VMWriter) jackMethod(file *os.File, className, methodName string, nVars int) {
 	methodDeclaration := fmt.Sprintf("function %s.%s %d\n", className, methodName, nVars)
 	setupThisPointer := "push argument 0\npop pointer 0\n"
 	_, err := fmt.Fprintf(file, "%s%s", methodDeclaration, setupThisPointer)
@@ -119,10 +119,10 @@ func jackMethod(file *os.File, className, methodName string, nVars int) {
 	}
 }
 
-func jackConstructor(file *os.File, className string, nVars, size int) {
+func (vm *VMWriter) jackConstructor(className string, nVars, size int) {
 	constructorDeclaration := fmt.Sprintf("function %s.new %d\n", className, nVars)
 	allocateMemory := fmt.Sprintf("push constant %d\ncall Memory.alloc 1\npop pointer 0\n", size)
-	_, err := fmt.Fprintf(file, "%s%s", constructorDeclaration, allocateMemory)
+	_, err := fmt.Fprintf(vm.writer, "%s%s", constructorDeclaration, allocateMemory)
 	if err != nil {
 		return
 	}

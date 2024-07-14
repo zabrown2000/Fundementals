@@ -4,7 +4,6 @@ import (
 	"Fundementals/JackTranslator/symbolTable"
 	"Fundementals/JackTranslator/tokeniser"
 	"Fundementals/JackTranslator/vmWriter"
-	"bufio"
 )
 
 /*
@@ -368,7 +367,7 @@ func (ce *CompilationEngine) CompileWhile() {
 	}
 	// Call compileStatements.
 	ce.GetToken()
-	ce.CompileStatements().
+	ce.CompileStatements()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
 		panic("Unexpected token! Expected }")
 	}
