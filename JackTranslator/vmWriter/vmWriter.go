@@ -1,6 +1,7 @@
 package vmWriter
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 )
@@ -17,6 +18,21 @@ writeCall(name, nargs)
 writeFunction(name, nlocals)
 writeReturn
 */
+
+type VMWriter struct {
+	writer    *bufio.Writer
+	file_name string
+}
+
+// New creates a new VMWriter instance for a given file path
+func New(vm_path string) *VMWriter {
+	write_file, err := os.OpenFile(vm_path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
+	if err != nil {
+		fmt.Println("File opening error", err)
+		return nil
+	}
+	return &VMWriter{bufio.NewWriter(write_file), ""}
+}
 
 func push(file *os.File, segment string, index int) {
 	_, err := fmt.Fprintf(file, "push %s %d\n", segment, index)
