@@ -94,3 +94,13 @@ func (st *SymbolTable) IndexOf(name string) int {
 	}
 	return -1
 }
+
+func countFields(classSymbolTable *SymbolTable) int {
+	count := 0
+	for _, symbol := range classSymbolTable.classScope {
+		if symbol.Kind == "field" {
+			count++
+		}
+	}
+	return count
+}
