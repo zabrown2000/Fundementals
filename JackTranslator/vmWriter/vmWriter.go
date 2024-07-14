@@ -52,3 +52,24 @@ func ifGoto(file *os.File, labelName string) {
 		return
 	}
 }
+
+func function(file *os.File, functionName string, nVars int) {
+	_, err := fmt.Fprintf(file, "function %s %d\n", functionName, nVars)
+	if err != nil {
+		return
+	}
+}
+
+func call(file *os.File, functionName string, nArgs int) {
+	_, err := fmt.Fprintf(file, "call %s %d\n", functionName, nArgs)
+	if err != nil {
+		return
+	}
+}
+
+func returnFunc(file *os.File) {
+	_, err := fmt.Fprintf(file, "return\n")
+	if err != nil {
+		return
+	}
+}
