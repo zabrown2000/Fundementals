@@ -86,3 +86,28 @@ func arithmetic(file *os.File, command string) {
 		}
 	}
 }
+
+func jackFunction(file *os.File, className, functionName string, nVars int) {
+	_, err := fmt.Fprintf(file, "function %s.%s %d\n", className, functionName, nVars)
+	if err != nil {
+		return
+	}
+}
+
+func jackMethod(file *os.File, className, methodName string, nVars int) {
+	methodDeclaration := fmt.Sprintf("function %s.%s %d\n", className, methodName, nVars)
+	setupThisPointer := "push argument 0\npop pointer 0\n"
+	_, err := fmt.Fprintf(file, "%s%s", methodDeclaration, setupThisPointer)
+	if err != nil {
+		return
+	}
+}
+
+func jackConstructor(file *os.File, className string, nVars, size int) {
+	constructorDeclaration := fmt.Sprintf("function %s.new %d\n", className, nVars)
+	allocateMemory := fmt.Sprintf("push constant %d\ncall Memory.alloc 1\npop pointer 0\n", size)
+	_, err := fmt.Fprintf(file, "%s%s", constructorDeclaration, allocateMemory)
+	if err != nil {
+		return
+	}
+}
