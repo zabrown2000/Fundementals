@@ -73,3 +73,16 @@ func returnFunc(file *os.File) {
 		return
 	}
 }
+
+func arithmetic(file *os.File, command string) {
+	validCommands := []string{"add", "sub", "neg", "eq", "gt", "lt", "and", "or", "not"}
+	for _, validCommand := range validCommands {
+		if command == validCommand {
+			_, err := fmt.Fprintf(file, "%s\n", command)
+			if err != nil {
+				return
+			}
+			return
+		}
+	}
+}
