@@ -26,8 +26,8 @@ type SymbolTable struct {
 	indexCounters   map[string]int
 }
 
-// NewSymbolTable creates a new symbol table - sets all indices to 0
-func NewSymbolTable() *SymbolTable {
+// New creates a new symbol table - sets all indices to 0
+func New() *SymbolTable {
 	return &SymbolTable{
 		classScope:      make(map[string]Symbol),
 		subroutineScope: make(map[string]Symbol),
