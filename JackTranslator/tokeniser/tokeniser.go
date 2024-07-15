@@ -135,10 +135,6 @@ func (t *Tokeniser) BlockComment(s string) bool {
 	return len(s) > 3 && strings.HasPrefix(s, "/*") && strings.HasSuffix(s, "*/")
 }
 
-func (t *Tokeniser) LineComment(s string) bool {
-	return len(s) > 2 && strings.HasPrefix(s, "//")
-}
-
 func (t *Tokeniser) TokeniseFile() {
 	//fmt.Println("in tokeniseFile")
 	inBlockComment := false
