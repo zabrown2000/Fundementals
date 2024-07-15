@@ -102,28 +102,3 @@ func (vm *VMWriter) WriteArithmetic(command string) {
 		}
 	}
 }
-
-func (vm *VMWriter) jackFunction(className, functionName string, nVars int) {
-	_, err := fmt.Fprintf(vm.writer, "function %s.%s %d\n", className, functionName, nVars)
-	if err != nil {
-		return
-	}
-}
-
-func (vm *VMWriter) jackMethod(file *os.File, className, methodName string, nVars int) {
-	methodDeclaration := fmt.Sprintf("function %s.%s %d\n", className, methodName, nVars)
-	setupThisPointer := "push argument 0\npop pointer 0\n"
-	_, err := fmt.Fprintf(file, "%s%s", methodDeclaration, setupThisPointer)
-	if err != nil {
-		return
-	}
-}
-
-func (vm *VMWriter) jackConstructor(className string, nVars, size int) {
-	constructorDeclaration := fmt.Sprintf("function %s.new %d\n", className, nVars)
-	allocateMemory := fmt.Sprintf("push constant %d\ncall Memory.alloc 1\npop pointer 0\n", size)
-	_, err := fmt.Fprintf(vm.writer, "%s%s", constructorDeclaration, allocateMemory)
-	if err != nil {
-		return
-	}
-}
