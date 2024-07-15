@@ -4,6 +4,7 @@ import (
 	"Fundementals/JackTranslator/symbolTable"
 	"Fundementals/JackTranslator/tokeniser"
 	"Fundementals/JackTranslator/vmWriter"
+	"strconv"
 )
 
 /*
@@ -516,7 +517,11 @@ func (ce *CompilationEngine) CompileTerm() {
 			}
 		}
 	} else if ce.currentToken.Token_type == tokeniser.INT_CONST {
-		ce.vmWriter.WritePush("constant", ce.currentToken.Token_content)
+		int_token, err := strconv.Atoi(ce.currentToken.Token_content)
+		if err != nil {
+			return
+		}
+		ce.vmWriter.WritePush("constant", int_token)
 	} else if ce.currentToken.Token_type == tokeniser.STRING_CONST {
 		stringVal := ce.currentToken.Token_content
 		ce.vmWriter.WritePush("constant", len(stringVal))
