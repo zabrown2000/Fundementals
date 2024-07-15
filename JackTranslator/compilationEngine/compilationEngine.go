@@ -7,19 +7,6 @@ import (
 	"strconv"
 )
 
-/*
-This class does the compilation itself. It reads its input from a JackTokenizer and writes its output into a
-VMWriter. It is organized as a series of compilexxx ( ) routines, where xxx is a syntactic element of the
-Jack language. The contract between these routines is that each compilexxx ( ) routine should read the
-syntactic construct xxx from the input, advance ( ) the tokenizer exactly beyond xxx, and emit to the output
-VM code effecting the semantics of xxx. Thus compilexxx ( ) may only be called if indeed xxx is the next
-syntactic element of the input. If xxx is a part of an expression and thus has a value, the emitted code
-should compute this value and leave it at the top of the VM stack.
-The API of this module is identical to that of the syntax analyzer’s compilation-Engine module fromchapter 10,
-and thus we suggest gradually morphing the syntax analyzer into a full compiler. Section 11.5
-provides step-by-step instructions and test programs for this construction.
-*/
-
 // TO DO: refactor checking symbols to be own func, like send symbol wanted and panic with currentToken and expected symbol
 
 type CompilationEngine struct {
@@ -36,17 +23,6 @@ type CompilationEngine struct {
 }
 
 func New(outputFile string, tokeniser *tokeniser.Tokeniser) *CompilationEngine {
-	//plainFile, err := os.OpenFile(plainOutputFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
-	//if err != nil {
-	//	return nil
-	//}
-	//plainWriter := bufio.NewWriter(plainFile)
-	//hierarchFile, err := os.OpenFile(hierarchOutputFile, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0777)
-	//if err != nil {
-	//	return nil
-	//}
-	//hierarchWriter := bufio.NewWriter(hierarchFile)
-
 	return &CompilationEngine{
 		tokeniser:         tokeniser,
 		vmWriter:          vmWriter.New(outputFile),
@@ -97,7 +73,7 @@ func (ce *CompilationEngine) CompileClassVarDec() {
 	// ('static'|'field') type identifier (',' identifier)* ';'
 
 	// getting kind for symbol table
-	varKind := ce.currentToken.Token_content
+	varKind := ce.currentToken.Token_content // will be static or field since class
 	// Advance the tokeniser and write the type
 	ce.GetToken()
 	//compile the type
@@ -135,9 +111,16 @@ func (ce *CompilationEngine) CompileSubroutine() {
 	if !(ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "constructor" || ce.currentToken.Token_content == "function" || ce.currentToken.Token_content == "method")) {
 		panic("Unexpected token type! Expected keyword for subroutine")
 	}
+	//if ce.currentToken.Token_content == "method" {
+	//	ce.symbolTable.Define("this", ce.currentClassName, "argument")
+	//}
+	var isMethod bool
 	if ce.currentToken.Token_content == "method" {
-		ce.symbolTable.Define("this", ce.currentClassName, "argument")
+		isMethod = true
+	} else {
+		isMethod = false
 	}
+	ce.symbolTable.StartSubroutine(isMethod, ce.currentClassName)
 
 	// Advance the tokeniser and write the return type (void or a type).
 	ce.GetToken()
@@ -304,16 +287,17 @@ func (ce *CompilationEngine) CompileLet() {
 	isArray := false
 	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "[" {
 		isArray = true
+		ce.vmWriter.WritePush(ce.GetSeg(ce.symbolTable.KindOf(varName)), ce.symbolTable.IndexOf(varName))
 		ce.GetToken()
 		ce.CompileExpression()
 		if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "]") {
 			panic("Unexpected token! Expected ]")
 		}
-		ce.vmWriter.WritePush(ce.symbolTable.KindOf(varName), ce.symbolTable.IndexOf(varName))
 		ce.vmWriter.WriteArithmetic("add")
 		ce.GetToken()
 	}
 	// Write the equals sign =.
+	// NOTE: might not need =?
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "=") {
 		panic("Unexpected token! Expected =")
 	}
@@ -330,7 +314,7 @@ func (ce *CompilationEngine) CompileLet() {
 		ce.vmWriter.WritePush("temp", 0)
 		ce.vmWriter.WritePop("that", 0)
 	} else {
-		ce.vmWriter.WritePop(ce.symbolTable.KindOf(varName), ce.symbolTable.IndexOf(varName))
+		ce.vmWriter.WritePop(ce.GetSeg(ce.symbolTable.KindOf(varName)), ce.symbolTable.IndexOf(varName))
 	}
 }
 
@@ -352,6 +336,9 @@ func (ce *CompilationEngine) CompileDo() {
 func (ce *CompilationEngine) CompileWhile() {
 	// 'while' '('expression')' '{' statements '}'
 
+	labelContinue := ce.NewLabel()
+	labelTop := ce.NewLabel()
+	ce.vmWriter.WriteLabel(labelTop)
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "(") {
 		panic("Unexpected token! Expected (")
@@ -362,6 +349,8 @@ func (ce *CompilationEngine) CompileWhile() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")") {
 		panic("Unexpected token! Expected )")
 	}
+	ce.vmWriter.WriteArithmetic("not")
+	ce.vmWriter.WriteIfGoto(labelContinue)
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "{") {
 		panic("Unexpected token! Expected {")
@@ -380,14 +369,14 @@ func (ce *CompilationEngine) CompileReturn() {
 
 	// Advance the tokeniser to check for an expression: If the current token is not a semicolon ;, call compileExpression.
 	ce.GetToken()
-	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ";") {
-		ce.CompileExpression()
-	} else {
+	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ";" {
 		ce.vmWriter.WritePush("constant", 0)
-	}
-	// Write the semicolon ;. - get token before leaving compileExpression
-	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ";") {
-		panic("Unexpected token! Expected ;")
+	} else {
+		ce.CompileExpression()
+		// Write the semicolon ;. - get token before leaving compileExpression
+		if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ";") {
+			panic("Unexpected token! Expected ;")
+		}
 	}
 	ce.vmWriter.WriteReturn()
 }
@@ -396,6 +385,8 @@ func (ce *CompilationEngine) CompileReturn() {
 func (ce *CompilationEngine) CompileIf() {
 	// 'if' '('expression')' '{'statements'}' ('else' '{'statements'}')?
 
+	labelElse := ce.NewLabel()
+	labelEnd := ce.NewLabel()
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "(") {
 		panic("Unexpected token! Expected (")
@@ -407,6 +398,8 @@ func (ce *CompilationEngine) CompileIf() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")") {
 		panic("Unexpected token! Expected )")
 	}
+	ce.vmWriter.WriteArithmetic("not")
+	ce.vmWriter.WriteIfGoto(labelElse)
 	// Advance the tokeniser and write the opening brace {.
 	ce.GetToken()
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "{") {
@@ -419,6 +412,8 @@ func (ce *CompilationEngine) CompileIf() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
 		panic("Unexpected token! Expected }")
 	}
+	ce.vmWriter.WriteGoTo(labelEnd)
+	ce.vmWriter.WriteLabel(labelElse)
 	// Advance the tokeniser to check for an else clause: If the current token is else, write the keyword else,
 	// the opening brace {, call compileStatements, and write the closing brace }.
 	ce.GetToken()
@@ -435,6 +430,7 @@ func (ce *CompilationEngine) CompileIf() {
 	} else {
 		ce.GoBackToken()
 	}
+	ce.vmWriter.WriteLabel(labelEnd)
 }
 
 // CompileExpression compiles an expression.
@@ -479,12 +475,12 @@ func (ce *CompilationEngine) CompileTerm() {
 		ce.GetToken()
 		if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "[" {
 			// array
+			ce.vmWriter.WritePush(ce.GetSeg(ce.symbolTable.KindOf(identifier)), ce.symbolTable.IndexOf(identifier))
 			ce.GetToken()
 			ce.CompileExpression() // end with break after getToken
 			if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "]") {
 				panic("Unexpected token! Expected ]")
 			}
-			ce.vmWriter.WritePush(ce.symbolTable.KindOf(identifier), ce.symbolTable.IndexOf(identifier))
 			ce.vmWriter.WriteArithmetic("add")
 			ce.vmWriter.WritePop("pointer", 1)
 			ce.vmWriter.WritePush("that", 0)
@@ -494,7 +490,7 @@ func (ce *CompilationEngine) CompileTerm() {
 			ce.GoBackToken()
 			ce.CompileSubroutineCall()
 		} else {
-			ce.vmWriter.WritePush(ce.symbolTable.KindOf(identifier), ce.symbolTable.IndexOf(identifier))
+			ce.vmWriter.WritePush(ce.GetSeg(ce.symbolTable.KindOf(identifier)), ce.symbolTable.IndexOf(identifier))
 			// need to move token back one since not using current token here
 			ce.GoBackToken()
 		}
@@ -571,20 +567,30 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 		ce.vmWriter.WritePush("pointer", 0)
 		name = ce.currentClassName + "." + name
 	} else if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "." {
-		//objName := name
+		objName := name
 		ce.GetToken()
 		if ce.currentToken.Token_type != tokeniser.IDENTIFIER { // not an identifier
 			panic("Unexpected token type! Expected identifier for class or var name")
 		}
-		subroutineName := ce.currentToken.Token_content
-		ce.GetToken()
-		kind := ce.symbolTable.KindOf(name)
-		if kind == "NONE" {
-			ce.vmWriter.WritePush(kind, ce.symbolTable.IndexOf(name))
-			name = ce.symbolTable.TypeOf(name) + "." + subroutineName
+		//subroutineName := ce.currentToken.Token_content
+		typ := ce.symbolTable.TypeOf(objName)
+		if typ == "int" || typ == "boolean" || typ == "char" || typ == "void" {
+			panic("Unexpected token type! Expected non-built in type")
+		} else if typ == "" {
+			name = objName + "." + name
 		} else {
-			name = name + "." + subroutineName
+			nArgs = 1
+			ce.vmWriter.WritePush(ce.GetSeg(ce.symbolTable.KindOf(objName)), ce.symbolTable.IndexOf(objName))
+			name = ce.symbolTable.TypeOf(objName) + "." + name
 		}
+		//ce.GetToken()
+		//kind := ce.symbolTable.KindOf(name)
+		//if kind == "NONE" {
+		//	ce.vmWriter.WritePush(kind, ce.symbolTable.IndexOf(name))
+		//	name = ce.symbolTable.TypeOf(name) + "." + subroutineName
+		//} else {
+		//	name = name + "." + subroutineName
+		//}
 	} else {
 		panic("Unexpected token! Expected ( or .")
 	}
@@ -654,5 +660,25 @@ func (ce *CompilationEngine) WriteArithmeticCommand(command string) {
 		ce.vmWriter.WriteArithmetic("gt")
 	case "=":
 		ce.vmWriter.WriteArithmetic("eq")
+	}
+}
+
+func (ce *CompilationEngine) NewLabel() string {
+	var l = ce.labelIndex
+	ce.labelIndex = l + 1
+	return "LABEL_" + strconv.Itoa(l)
+}
+
+func (ce *CompilationEngine) GetSeg(kind string) string {
+	if kind == "field" {
+		return "this"
+	} else if kind == "static" {
+		return kind
+	} else if kind == "local" {
+		return kind
+	} else if kind == "argument" {
+		return kind
+	} else {
+		return ""
 	}
 }
