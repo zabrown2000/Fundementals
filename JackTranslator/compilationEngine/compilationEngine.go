@@ -4,6 +4,8 @@ import (
 	"Fundementals/JackTranslator/symbolTable"
 	"Fundementals/JackTranslator/tokeniser"
 	"Fundementals/JackTranslator/vmWriter"
+	"fmt"
+	"runtime"
 	"strconv"
 )
 
@@ -107,7 +109,7 @@ func (ce *CompilationEngine) CompileClassVarDec() {
 // CompileSubroutine compiles a complete method, function, or constructor.
 func (ce *CompilationEngine) CompileSubroutine() {
 	// ('constructor'|'function'|'method') ('void'|type) identifier '(' parameterList ')' subroutineBody
-
+	//we checked this before calling CompileSubroutine
 	if !(ce.currentToken.Token_type == tokeniser.KEYWORD && (ce.currentToken.Token_content == "constructor" || ce.currentToken.Token_content == "function" || ce.currentToken.Token_content == "method")) {
 		panic("Unexpected token type! Expected keyword for subroutine")
 	}
@@ -222,7 +224,7 @@ func (ce *CompilationEngine) CompileVarDec() {
 	// Advance the tokeniser
 	ce.GetToken()
 	//compile the type
-	varType := ce.currentToken.Token_content
+	varType := ce.currentToken.Token_content //also assigning the type before we've verified if it's legal?
 	ce.CompileType()
 	if ce.currentToken.Token_type != tokeniser.IDENTIFIER { // not an identifier
 		panic("Unexpected token type! Expected identifier for variable name")
@@ -485,9 +487,13 @@ func (ce *CompilationEngine) CompileTerm() {
 			ce.vmWriter.WritePop("pointer", 1)
 			ce.vmWriter.WritePush("that", 0)
 		} else if ce.currentToken.Token_type == tokeniser.SYMBOL && (ce.currentToken.Token_content == "(" || ce.currentToken.Token_content == ".") {
+			fmt.Println("In CompileTerm else if for ( and . ")
+			fmt.Println(ce.currentToken.Token_content)
 			// subroutine call
 			// need to go back so function is at subroutine name
 			ce.GoBackToken()
+			fmt.Println("after go back token")
+			fmt.Println(ce.currentToken.Token_content)
 			ce.CompileSubroutineCall()
 		} else {
 			ce.vmWriter.WritePush(ce.GetSeg(ce.symbolTable.KindOf(identifier)), ce.symbolTable.IndexOf(identifier))
@@ -524,7 +530,7 @@ func (ce *CompilationEngine) CompileTerm() {
 		ce.vmWriter.WriteCall("String.new", 1) //1 param, length of string
 		for _, char := range stringVal {       //NOTE: needs to be rune here?
 			ce.vmWriter.WritePush("constant", int(char))
-			ce.vmWriter.WriteCall("String.appendChar", 2) //above push and result of new strign will be in stack
+			ce.vmWriter.WriteCall("String.appendChar", 2) //above push and result of new string will be in stack
 		}
 	}
 }
@@ -553,7 +559,12 @@ func (ce *CompilationEngine) CompileExpressionList() int {
 
 // CompileSubroutineCall compiles a subroutine call
 func (ce *CompilationEngine) CompileSubroutineCall() {
+	fmt.Println("in subroutinecall")
+	PrintCaller()
 	// identifier'('expressionList')' | identifier'.'identifier'('expressionList')'
+
+	//I don't think we need to do this - we've already checked that it's an identifier, and all we do is go
+	//forward again with the token and again get either the '.' or '('
 
 	// Write the subroutine name
 	if ce.currentToken.Token_type != tokeniser.IDENTIFIER { // not an identifier
@@ -576,7 +587,7 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 		typ := ce.symbolTable.TypeOf(objName)
 		if typ == "int" || typ == "boolean" || typ == "char" || typ == "void" {
 			panic("Unexpected token type! Expected non-built in type")
-		} else if typ == "" {
+		} else if typ == "" { //This or the symbol table type of need to be matched
 			name = objName + "." + name
 		} else {
 			nArgs = 1
@@ -599,7 +610,7 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 	nArgs = ce.CompileExpressionList() + 1
 	// Write the closing parenthesis ). - when leave expressionList did a get token
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")") {
-		panic("Unexpected token! Expected )")
+		panic("Unexpected token! Expected ) " + ce.currentToken.Token_content)
 	}
 	ce.vmWriter.WriteCall(name, nArgs)
 }
@@ -621,11 +632,15 @@ func (ce *CompilationEngine) CompileType() {
 func (ce *CompilationEngine) GetToken() {
 	ce.currentToken = &ce.tokeniser.Tokens[ce.currentTokenIndex]
 	ce.currentTokenIndex = ce.currentTokenIndex + 1
+	fmt.Println(strconv.Itoa(ce.currentTokenIndex) + "  " + ce.currentToken.Token_content + "\n")
+	PrintCaller()
 }
 
 func (ce *CompilationEngine) GoBackToken() {
 	ce.currentTokenIndex = ce.currentTokenIndex - 1
 	ce.currentToken = &ce.tokeniser.Tokens[ce.currentTokenIndex-1]
+	fmt.Println(strconv.Itoa(ce.currentTokenIndex) + "  " + ce.currentToken.Token_content + "\n")
+	PrintCaller()
 }
 
 func (ce *CompilationEngine) currentFunction() string {
@@ -681,4 +696,13 @@ func (ce *CompilationEngine) GetSeg(kind string) string {
 	} else {
 		return ""
 	}
+}
+
+func PrintCaller() {
+	_, file, line, ok := runtime.Caller(2)
+	if !ok {
+		fmt.Println("Could not get caller information")
+		return
+	}
+	fmt.Printf("Called from %s:%d\n", file, line)
 }
