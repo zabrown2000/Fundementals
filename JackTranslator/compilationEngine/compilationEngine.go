@@ -365,6 +365,8 @@ func (ce *CompilationEngine) CompileWhile() {
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "}") {
 		panic("Unexpected token! Expected }")
 	}
+	ce.vmWriter.WriteGoTo(labelTop)
+	ce.vmWriter.WriteLabel(labelContinue)
 }
 
 // CompileReturn compiles a return statement.
