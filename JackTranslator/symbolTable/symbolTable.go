@@ -81,7 +81,7 @@ func (st *SymbolTable) TypeOf(name string) string {
 	if symbol, ok := st.classScope[name]; ok {
 		return symbol.Type
 	}
-	return "NONE"
+	return ""
 }
 
 // IndexOf returns the index of the named identifier
