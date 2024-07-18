@@ -36,6 +36,8 @@ func New(vm_path string) *VMWriter {
 }
 
 func (vm *VMWriter) WritePush(segment string, index int) {
+	//fmt.Println("WritePush: " + segment + " " + strconv.Itoa(index))
+	//PrintCaller()
 	_, err := fmt.Fprintf(vm.writer, "push %s %d\n", segment, index)
 	if err != nil {
 		return
@@ -47,6 +49,8 @@ func (vm *VMWriter) WritePush(segment string, index int) {
 }
 
 func (vm *VMWriter) WritePop(segment string, index int) {
+	//fmt.Println("WritePop: " + segment + " " + strconv.Itoa(index))
+	//PrintCaller()
 	_, err := fmt.Fprintf(vm.writer, "pop %s %d\n", segment, index)
 	if err != nil {
 		return
@@ -58,9 +62,9 @@ func (vm *VMWriter) WritePop(segment string, index int) {
 }
 
 func (vm *VMWriter) WriteLabel(labelName string) {
-	PrintCaller()
-	fmt.Println("WriteLabel")
-	fmt.Println(labelName)
+	//PrintCaller()
+	//fmt.Println("WriteLabel")
+	//fmt.Println(labelName)
 	_, err := fmt.Fprintf(vm.writer, "label %s\n", labelName)
 	if err != nil {
 		return
@@ -72,9 +76,9 @@ func (vm *VMWriter) WriteLabel(labelName string) {
 }
 
 func (vm *VMWriter) WriteGoTo(labelName string) {
-	PrintCaller()
-	fmt.Println("WriteGoTo")
-	fmt.Println(labelName)
+	//PrintCaller()
+	//fmt.Println("WriteGoTo")
+	//fmt.Println(labelName)
 	_, err := fmt.Fprintf(vm.writer, "goto %s\n", labelName)
 	if err != nil {
 		return
@@ -86,9 +90,9 @@ func (vm *VMWriter) WriteGoTo(labelName string) {
 }
 
 func (vm *VMWriter) WriteIfGoto(labelName string) {
-	PrintCaller()
-	fmt.Println("WriteIfGoto")
-	fmt.Println(labelName)
+	//PrintCaller()
+	//fmt.Println("WriteIfGoto")
+	//fmt.Println(labelName)
 	_, err := fmt.Fprintf(vm.writer, "if-goto %s\n", labelName)
 	if err != nil {
 		return
@@ -111,6 +115,8 @@ func (vm *VMWriter) WriteFunction(functionName string, nVars int) {
 }
 
 func (vm *VMWriter) WriteCall(functionName string, nArgs int) {
+	//PrintCaller()
+	//fmt.Println("WriteCall: " + functionName + " " + strconv.Itoa(nArgs))
 	_, err := fmt.Fprintf(vm.writer, "call %s %d\n", functionName, nArgs)
 	if err != nil {
 		return

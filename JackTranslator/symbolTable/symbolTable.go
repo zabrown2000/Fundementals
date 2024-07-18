@@ -24,6 +24,7 @@ type SymbolTable struct {
 	classScope      map[string]Symbol
 	subroutineScope map[string]Symbol
 	indexCounters   map[string]int
+	SubroutineKind  string
 }
 
 // New creates a new symbol table - sets all indices to 0
@@ -32,14 +33,16 @@ func New() *SymbolTable {
 		classScope:      make(map[string]Symbol),
 		subroutineScope: make(map[string]Symbol),
 		indexCounters:   map[string]int{"static": 0, "field": 0, "argument": 0, "local": 0},
+		SubroutineKind:  "",
 	}
 }
 
 // StartSubroutine resets the subroutine scope
-func (st *SymbolTable) StartSubroutine(isMethod bool, className string) {
+func (st *SymbolTable) StartSubroutine(isMethod bool, className string, subroutineKind string) {
 	st.subroutineScope = make(map[string]Symbol)
 	st.indexCounters["argument"] = 0
 	st.indexCounters["local"] = 0
+	st.SubroutineKind = subroutineKind
 	if isMethod {
 		st.Define("this", className, "argument")
 	}
