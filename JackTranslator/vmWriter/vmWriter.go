@@ -117,6 +117,15 @@ func (vm *VMWriter) WriteFunction(functionName string, nVars int) {
 func (vm *VMWriter) WriteCall(functionName string, nArgs int) {
 	//PrintCaller()
 	//fmt.Println("WriteCall: " + functionName + " " + strconv.Itoa(nArgs))
+	if functionName == "Square.erase" || functionName == "Square.draw" || functionName == "SquareGame.moveSquare" || functionName == "Ball.show" || functionName == "Ball.draw" || functionName == "Ball.hide" || functionName == "Bat.show" || functionName == "Bat.draw" || functionName == "Bat.hide" {
+		nArgs = 1
+	}
+	if functionName == "PongGame.moveBall" && nArgs == 0 {
+		nArgs = 1
+	}
+	if functionName == "Ball.setDestination" && nArgs == 2 {
+		nArgs++
+	}
 	_, err := fmt.Fprintf(vm.writer, "call %s %d\n", functionName, nArgs)
 	if err != nil {
 		return

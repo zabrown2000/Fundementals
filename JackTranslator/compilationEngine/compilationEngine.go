@@ -470,15 +470,15 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 		}
 		objName := ce.currentToken.Token_content
 		//subroutineName := ce.currentToken.Token_content
-		typ := ce.symbolTable.TypeOf(objName)
+		typ := ce.symbolTable.TypeOf(name)
 		if typ == "int" || typ == "boolean" || typ == "char" || typ == "void" {
 			panic("Unexpected token type! Expected non-built in type in subroutine call " + ce.currentToken.Token_content)
 		} else if typ == "" { //This or the symbol table type of need to be matched
 			name += "." + objName
 		} else {
-			nArgs = 1
-			ce.vmWriter.WritePush(ce.GetSeg(ce.symbolTable.KindOf(objName)), ce.symbolTable.IndexOf(objName))
-			name = ce.symbolTable.TypeOf(objName) + "." + name
+			nArgs++
+			ce.vmWriter.WritePush(ce.GetSeg(ce.symbolTable.KindOf(name)), ce.symbolTable.IndexOf(name))
+			name = ce.symbolTable.TypeOf(name) + "." + objName
 		}
 		ce.GetToken() //from subroutinename to (
 	} else {
@@ -486,7 +486,7 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 	}
 	// Advance the tokeniser and call compileExpressionList.
 	//token at this point is (
-	nArgs = ce.CompileExpressionList() //+ 1
+	nArgs += ce.CompileExpressionList() //+ 1
 	// Write the closing parenthesis ). - when leave expressionList did a get token?
 	if !(ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == ")") {
 		panic("Unexpected token! Expected ) end of subroutinecall " + ce.currentToken.Token_content)
@@ -538,7 +538,7 @@ func (ce *CompilationEngine) CompileExpression() {
 	for {
 		ce.CompileTerm() //what do we leave compile term with?
 		ce.GetToken()
-		fmt.Println("returnn from compile term to compile expression - cur token is: " + ce.currentToken.Token_content)
+		//fmt.Println("returnn from compile term to compile expression - cur token is: " + ce.currentToken.Token_content)
 		if !(isOperator(ce.currentToken.Token_content)) {
 			break
 		}
@@ -653,8 +653,8 @@ func (ce *CompilationEngine) CompileType() {
 func (ce *CompilationEngine) GetToken() {
 	ce.currentToken = &ce.tokeniser.Tokens[ce.currentTokenIndex]
 	ce.currentTokenIndex = ce.currentTokenIndex + 1
-	//PrintCaller()
-	//fmt.Println(strconv.Itoa(ce.currentTokenIndex) + " " + ce.currentToken.Token_content)
+	PrintCaller()
+	fmt.Println(strconv.Itoa(ce.currentTokenIndex) + " " + ce.currentToken.Token_content)
 }
 
 func (ce *CompilationEngine) GetSeg(kind string) string {
@@ -680,8 +680,8 @@ func (ce *CompilationEngine) NewLabel() string {
 func (ce *CompilationEngine) GoBackToken() {
 	ce.currentTokenIndex = ce.currentTokenIndex - 1
 	ce.currentToken = &ce.tokeniser.Tokens[ce.currentTokenIndex-1]
-	//PrintCaller()
-	//fmt.Println(strconv.Itoa(ce.currentTokenIndex) + " " + ce.currentToken.Token_content)
+	PrintCaller()
+	fmt.Println(strconv.Itoa(ce.currentTokenIndex) + " " + ce.currentToken.Token_content)
 }
 
 func (ce *CompilationEngine) WriteArithmeticCommand(command string) {
