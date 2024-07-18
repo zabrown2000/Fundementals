@@ -547,7 +547,6 @@ func (ce *CompilationEngine) CompileExpression() {
 		ce.CompileTerm()
 		ce.WriteArithmeticCommand(op) //wait until term is placed in stack before putting in op for postfix notation
 		ce.GetToken()
-		fmt.Println("returnn from compile term to compile expression - cur token is: " + ce.currentToken.Token_content)
 		if !(isOperator(ce.currentToken.Token_content)) {
 			break
 		}
