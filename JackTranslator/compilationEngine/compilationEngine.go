@@ -5,7 +5,6 @@ import (
 	"Fundementals/JackTranslator/tokeniser"
 	"Fundementals/JackTranslator/vmWriter"
 	"fmt"
-	"runtime"
 	"strconv"
 )
 
@@ -463,6 +462,7 @@ func (ce *CompilationEngine) CompileSubroutineCall() {
 	if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "(" {
 		ce.vmWriter.WritePush("pointer", 0)
 		name = ce.currentClassName + "." + name
+		nArgs++
 	} else if ce.currentToken.Token_type == tokeniser.SYMBOL && ce.currentToken.Token_content == "." {
 		ce.GetToken()                                           //next identifier
 		if ce.currentToken.Token_type != tokeniser.IDENTIFIER { // not an identifier
@@ -653,8 +653,6 @@ func (ce *CompilationEngine) CompileType() {
 func (ce *CompilationEngine) GetToken() {
 	ce.currentToken = &ce.tokeniser.Tokens[ce.currentTokenIndex]
 	ce.currentTokenIndex = ce.currentTokenIndex + 1
-	PrintCaller()
-	fmt.Println(strconv.Itoa(ce.currentTokenIndex) + " " + ce.currentToken.Token_content)
 }
 
 func (ce *CompilationEngine) GetSeg(kind string) string {
@@ -680,8 +678,6 @@ func (ce *CompilationEngine) NewLabel() string {
 func (ce *CompilationEngine) GoBackToken() {
 	ce.currentTokenIndex = ce.currentTokenIndex - 1
 	ce.currentToken = &ce.tokeniser.Tokens[ce.currentTokenIndex-1]
-	PrintCaller()
-	fmt.Println(strconv.Itoa(ce.currentTokenIndex) + " " + ce.currentToken.Token_content)
 }
 
 func (ce *CompilationEngine) WriteArithmeticCommand(command string) {
@@ -710,13 +706,4 @@ func (ce *CompilationEngine) WriteArithmeticCommand(command string) {
 func isOperator(symbol string) bool {
 	return symbol == "+" || symbol == "-" || symbol == "*" || symbol == "/" ||
 		symbol == "&" || symbol == "|" || symbol == "<" || symbol == ">" || symbol == "="
-}
-
-func PrintCaller() {
-	_, _, line, ok := runtime.Caller(2)
-	if !ok {
-		fmt.Println("Could not get caller information")
-		return
-	}
-	fmt.Printf("Called from line %d\n", line)
 }

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"runtime"
 )
 
 /*
@@ -36,8 +35,6 @@ func New(vm_path string) *VMWriter {
 }
 
 func (vm *VMWriter) WritePush(segment string, index int) {
-	//fmt.Println("WritePush: " + segment + " " + strconv.Itoa(index))
-	//PrintCaller()
 	_, err := fmt.Fprintf(vm.writer, "push %s %d\n", segment, index)
 	if err != nil {
 		return
@@ -49,8 +46,6 @@ func (vm *VMWriter) WritePush(segment string, index int) {
 }
 
 func (vm *VMWriter) WritePop(segment string, index int) {
-	//fmt.Println("WritePop: " + segment + " " + strconv.Itoa(index))
-	//PrintCaller()
 	_, err := fmt.Fprintf(vm.writer, "pop %s %d\n", segment, index)
 	if err != nil {
 		return
@@ -62,9 +57,6 @@ func (vm *VMWriter) WritePop(segment string, index int) {
 }
 
 func (vm *VMWriter) WriteLabel(labelName string) {
-	//PrintCaller()
-	//fmt.Println("WriteLabel")
-	//fmt.Println(labelName)
 	_, err := fmt.Fprintf(vm.writer, "label %s\n", labelName)
 	if err != nil {
 		return
@@ -76,9 +68,6 @@ func (vm *VMWriter) WriteLabel(labelName string) {
 }
 
 func (vm *VMWriter) WriteGoTo(labelName string) {
-	//PrintCaller()
-	//fmt.Println("WriteGoTo")
-	//fmt.Println(labelName)
 	_, err := fmt.Fprintf(vm.writer, "goto %s\n", labelName)
 	if err != nil {
 		return
@@ -90,9 +79,6 @@ func (vm *VMWriter) WriteGoTo(labelName string) {
 }
 
 func (vm *VMWriter) WriteIfGoto(labelName string) {
-	//PrintCaller()
-	//fmt.Println("WriteIfGoto")
-	//fmt.Println(labelName)
 	_, err := fmt.Fprintf(vm.writer, "if-goto %s\n", labelName)
 	if err != nil {
 		return
@@ -115,17 +101,6 @@ func (vm *VMWriter) WriteFunction(functionName string, nVars int) {
 }
 
 func (vm *VMWriter) WriteCall(functionName string, nArgs int) {
-	//PrintCaller()
-	//fmt.Println("WriteCall: " + functionName + " " + strconv.Itoa(nArgs))
-	if functionName == "Square.erase" || functionName == "Square.draw" || functionName == "SquareGame.moveSquare" || functionName == "Ball.show" || functionName == "Ball.draw" || functionName == "Ball.hide" || functionName == "Bat.show" || functionName == "Bat.draw" || functionName == "Bat.hide" {
-		nArgs = 1
-	}
-	if functionName == "PongGame.moveBall" && nArgs == 0 {
-		nArgs = 1
-	}
-	if functionName == "Ball.setDestination" && nArgs == 2 {
-		nArgs++
-	}
 	_, err := fmt.Fprintf(vm.writer, "call %s %d\n", functionName, nArgs)
 	if err != nil {
 		return
@@ -162,13 +137,4 @@ func (vm *VMWriter) WriteArithmetic(command string) {
 			return
 		}
 	}
-}
-
-func PrintCaller() {
-	_, _, line, ok := runtime.Caller(2)
-	if !ok {
-		fmt.Println("Could not get caller information")
-		return
-	}
-	fmt.Printf("Called from line %d\n", line)
 }
