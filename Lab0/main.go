@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// path: C:\Users\zbrow\OneDrive\Documents\Machon_Tal\Fundementals\Lab0-Eng\
+// path: C:\Users\zbrow\OneDrive\Documents\Machon_Tal\Fundamentals\Lab0-Eng\
 // path: C:\Users\Merekat\Documents\School\23-24\Fundamentals\Lab0-Eng\
 
 var CurVM string
